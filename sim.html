@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phoenix Flare — static sim</title>
+<style>
+body{margin:0;background:#0b1210;color:#e8f0e8;font-family:-apple-system,sans-serif}
+.stage{max-width:440px;margin:0 auto;padding:16px}
+.room{position:relative;height:220px;margin:12px 0;border:2px solid #2a4a3a;background:linear-gradient(180deg,#3d6b5a 0 42px,#f3d7a4 42px 100%);overflow:hidden}
+.roof{position:absolute;top:0;left:0;right:0;height:42px;background:#c45c26}
+.bed{position:absolute;bottom:24px;left:24px;width:120px;height:48px;background:#7a3040}
+.chair{position:absolute;bottom:24px;right:36px;width:40px;height:56px;background:#2e6b6b}
+.fan{position:absolute;top:52px;left:50%;width:80px;height:8px;background:#333;transform:translateX(-50%)}
+h1{font-size:16px;letter-spacing:.12em;text-transform:uppercase}
+.prompt{font-size:13px;color:#9cb8a8;min-height:3em}
+video{width:100%;background:#000}
+button{width:100%;padding:12px;margin:6px 0;background:#132018;color:#d7eef6;border:1px solid #2a5160}
+</style>
+</head>
+<body>
+<div class="stage">
+  <h1>Static sim · Phoenix Flare</h1>
+  <p class="prompt" id="prompt">Prompted stills. Not The Sims 4. Original rooms. Fall → Healing → Rising.</p>
+  <div class="room" id="room"><div class="roof"></div><div class="fan"></div><div class="bed"></div><div class="chair"></div></div>
+  <video id="story" controls playsinline poster="" src="Phoenix_Flare_Storyline_StaticSim.mp4"></video>
+  <button data-act="fall">Prompt: The Fall</button>
+  <button data-act="heal">Prompt: The Healing</button>
+  <button data-act="rise">Prompt: The Rising</button>
+  <button id="loadBuf">Load local launch buffer</button>
+  <pre id="buf" style="font-size:11px;white-space:pre-wrap"></pre>
+</div>
+<script>
+const copy = {
+  fall: 'Robert on the bunk. Lift failed on purpose. Hands on his stomach. Ship already moving.',
+  heal: 'Silk and still air. Chair occupied. He stays in the room until the body stops arguing.',
+  rise: 'Hands free. Cross at the throat. The ship climbs. The floor he chose is still there.'
+};
+document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
+  document.getElementById('prompt').textContent = copy[b.dataset.act];
+});
+document.getElementById('loadBuf').onclick = async () => {
+  try {
+    const r = await fetch('launch-buffer.json');
+    document.getElementById('buf').textContent = await r.text();
+  } catch(e) {
+    document.getElementById('buf').textContent = 'No local buffer yet. Run the Mac helper or pick bookmarks.html on iOS.';
+  }
+};
+</script>
+</body>
+</html>
