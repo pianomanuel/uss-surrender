@@ -1,12 +1,17 @@
 # U.S.S. Surrender
 
-Private adult fiction for Robert. Hatch is passworded.
+Public Alpha card. Restricted deck is not this file.
 
-## URLs (after Pages is on)
+## Paste for Meta
 
-- Prod: https://pianomanuel.github.io/uss-surrender/
-- Dev: https://pianomanuel.github.io/uss-surrender/dev/
+https://github.com/pianomanuel/uss-surrender
 
-Repo: https://github.com/pianomanuel/uss-surrender
+That is the URL Meta can fetch today. GitHub Pages is not live yet, so github.io returns 404 and Meta will say it cannot read the link.
 
-Audio MP3s stay in the local project folder. The live page uses ship speech for scripts.
+## After Pages is enabled
+
+https://pianomanuel.github.io/uss-surrender/alpha/
+
+## Restricted deck (not for Meta)
+
+https://pianomanuel.github.io/uss-surrender/
