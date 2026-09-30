@@ -1,1 +1,164 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#03060c">
+<title>Phoenix Flare — native listen</title>
+<style>
+:root{--cyan:#7ee7ff;--ice:#c9f4ff;--line:#1c3a48;--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{margin:0;background:#03060c;color:#d7eef6;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+body{padding:calc(var(--sat)+14px) 16px calc(var(--sab)+20px)}
+.wrap{max-width:440px;margin:0 auto}
+h1{font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:var(--ice)}
+.sub{color:#6f8b97;font-size:13px;line-height:1.45}
+.cab{border:1px solid var(--line);border-radius:8px;padding:14px;background:#071018}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+button,label.file{
+  flex:1;min-width:120px;border:1px solid #2a5160;background:#0b1820;color:#d7eef6;
+  border-radius:4px;padding:12px 8px;font-size:13px;text-align:center
+}
+button.on{border-color:var(--cyan);color:var(--cyan)}
+.status{min-height:2.4em;font-size:12px;color:#9ec4d2;margin-top:8px;white-space:pre-wrap}
+.gone{display:none}
+input[type=password]{width:100%;background:#02060a;border:1px solid #2a5160;color:var(--ice);border-radius:4px;padding:12px;font-size:16px}
+video,audio{width:100%;margin-top:8px;background:#000}
+.hint{font-size:11px;color:#5e7d8a;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="sub">U.S.S. Surrender · Phoenix Flare</p>
+  <h1>Native listen</h1>
+  <p class="sub">Permissions first. Hatch second. Then local MP3 or lossless play. Nothing leaves this phone unless you export it.</p>
+
+  <div class="cab" id="perm">
+    <p class="hint">iOS will show three system sheets. Allow or deny each. Location is only printed here. Camera preview is dropped after grant. Mic is released after grant.</p>
+    <div class="row">
+      <button id="askAll">Ask audio · camera · location</button>
+    </div>
+    <div class="status" id="permStat">Waiting for authorization sheets.</div>
+    <video id="preview" playsinline muted autoplay class="gone"></video>
+  </div>
+
+  <div class="cab gone" id="lock" style="margin-top:12px">
+    <label class="hint">Restricted bulkhead</label>
+    <input id="secret" type="password" autocomplete="off" placeholder="say it" enterkeyhint="go">
+    <div class="row"><button id="unlock">Open bulkhead</button></div>
+    <div class="status" id="lockStat">Permissions done. Word next.</div>
+  </div>
+
+  <div class="cab gone" id="deck" style="margin-top:12px">
+    <p class="hint">Import MP3, WAV, FLAC, M4A, AAC, or a video. Play uses the native element.</p>
+    <div class="row">
+      <label class="file">Import audio
+        <input id="audioIn" type="file" accept="audio/*,.mp3,.wav,.flac,.m4a,.aac,.ogg" hidden>
+      </label>
+      <label class="file">Import video
+        <input id="videoIn" type="file" accept="video/*,.mp4,.mov,.m4v" hidden>
+      </label>
+    </div>
+    <div class="row">
+      <button id="playTest">Play Eve test MP3</button>
+      <button id="stop">Stop</button>
+    </div>
+    <audio id="player" controls></audio>
+    <video id="vplayer" controls playsinline class="gone"></video>
+    <div class="status" id="playStat">Deck open. Import or play the 15s Eve test.</div>
+  </div>
+</div>
+<script>
+const permStat = document.getElementById('permStat');
+const lock = document.getElementById('lock');
+const deck = document.getElementById('deck');
+const preview = document.getElementById('preview');
+const player = document.getElementById('player');
+const vplayer = document.getElementById('vplayer');
+let objectUrl = null;
+
+function logPerm(lines){ permStat.textContent = lines.join('\n'); }
+
+async function askMic(){
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+    s.getTracks().forEach(t => t.stop());
+    return 'mic: granted (released)';
+  } catch(e){ return 'mic: ' + (e.name || e.message); }
+}
+async function askCam(){
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+    preview.srcObject = s;
+    preview.classList.remove('gone');
+    setTimeout(() => {
+      s.getTracks().forEach(t => t.stop());
+      preview.srcObject = null;
+      preview.classList.add('gone');
+    }, 1200);
+    return 'camera: granted (preview dropped)';
+  } catch(e){ return 'camera: ' + (e.name || e.message); }
+}
+async function askGeo(){
+  if(!navigator.geolocation) return 'location: API missing';
+  return new Promise(resolve => {
+    navigator.geolocation.getCurrentPosition(
+      p => resolve('location: granted ' + p.coords.latitude.toFixed(4) + ', ' + p.coords.longitude.toFixed(4)),
+      e => resolve('location: ' + e.message),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+    );
+  });
+}
+
+document.getElementById('askAll').onclick = async () => {
+  logPerm(['Asking… tap Allow on each sheet.']);
+  const mic = await askMic();
+  const cam = await askCam();
+  const geo = await askGeo();
+  logPerm([mic, cam, geo, 'Hatch unlocked for word entry.']);
+  lock.classList.remove('gone');
+};
+
+function norm(s){ return (s || '').toLowerCase().replace(/\s+/g,'').replace(/[^a-z]/g,''); }
+function tryUnlock(){
+  if(norm(document.getElementById('secret').value) === 'goodboy'){
+    lock.classList.add('gone');
+    deck.classList.remove('gone');
+  } else {
+    document.getElementById('lockStat').textContent = 'Wrong word.';
+    document.getElementById('secret').value = '';
+  }
+}
+document.getElementById('unlock').onclick = tryUnlock;
+document.getElementById('secret').addEventListener('keydown', e => { if(e.key === 'Enter') tryUnlock(); });
+
+function loadFile(file, kind){
+  if(objectUrl) URL.revokeObjectURL(objectUrl);
+  objectUrl = URL.createObjectURL(file);
+  if(kind === 'video'){
+    player.pause();
+    vplayer.classList.remove('gone');
+    vplayer.src = objectUrl;
+    vplayer.play().catch(() => {});
+    document.getElementById('playStat').textContent = 'Video: ' + file.name;
+  } else {
+    vplayer.pause();
+    vplayer.classList.add('gone');
+    player.src = objectUrl;
+    player.play().catch(() => {});
+    document.getElementById('playStat').textContent = 'Audio: ' + file.name + ' · ' + file.type;
+  }
+}
+document.getElementById('audioIn').onchange = e => { const f = e.target.files[0]; if(f) loadFile(f, 'audio'); };
+document.getElementById('videoIn').onchange = e => { const f = e.target.files[0]; if(f) loadFile(f, 'video'); };
+
+document.getElementById('playTest').onclick = async () => {
+  player.src = 'Phoenix_Flare_commish_eve.mp3';
+  try { await player.play(); document.getElementById('playStat').textContent = 'Eve test MP3 · native <audio>'; }
+  catch(err){ document.getElementById('playStat').textContent = 'Tap again after audio authorization.'; }
+};
+document.getElementById('stop').onclick = () => { player.pause(); vplayer.pause(); };
+</script>
+</body>
+</html>
