@@ -1,0 +1,9 @@
+{
+  "name": "Phoenix Flare Deck 13",
+  "short_name": "Deck13",
+  "start_url": "./deck13-3d.html",
+  "display": "standalone",
+  "background_color": "#071018",
+  "theme_color": "#071018",
+  "description": "Private static 3D cabin. PG-13 shell."
+}
