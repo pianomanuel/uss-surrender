@@ -122,6 +122,17 @@
     opacity:0; pointer-events:none; transition:opacity .28s ease; z-index:40;
   }
   #scrim.show{opacity:1; pointer-events:auto;}
+  /* Fleet manifest */
+  .manifest{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; margin-top:14px;}
+  .mcard{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px;}
+  .mcard h3{margin:0 0 8px; font-size:13px; letter-spacing:1px; font-weight:600;}
+  .mcard .row{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .badge{font-size:10px; letter-spacing:2px; padding:3px 10px; border-radius:20px; white-space:nowrap;}
+  .badge.pub{color:#7CFFB2; border:1px solid #2c5f46;}
+  .badge.priv{color:var(--dim); border:1px solid var(--line);}
+  .mcard a.open{color:var(--blue); font-size:12px; letter-spacing:1px; text-decoration:none;}
+  .mcard a.open:hover{text-decoration:underline;}
+  .mcard .note{color:var(--dim); font-size:11px;}
   html{scroll-behavior:smooth;}
 </style>
 </head>
@@ -135,6 +146,7 @@
   <a href="#loop">The Loop</a>
   <a href="#approvals">Approval Queue</a>
   <a href="#log">Ship's Log</a>
+  <a href="#manifest">Fleet Manifest</a>
   <div class="nav-div">EXTERNAL</div>
   <a href="https://github.com/pianomanuel/uss-surrender">Ship's Repository</a>
   <a href="https://pianomanuel.atlassian.net/jira/software/projects/PMC/boards/37/backlog">PMC Backlog</a>
@@ -202,6 +214,32 @@
       <div><span class="t">2026-10-08 21:50</span> — <b>Ship's Computer:</b> PMC backlog export secured — 330 issues archived to the dock.</div>
       <div><span class="t">2026-10-08 21:55</span> — <b>Medical Bay:</b> overnight build schedules restored after erroneous stand-down. All sprints building.</div>
       <div><span class="t">2026-10-07 20:37</span> — <b>Subspace Radio:</b> false stand-down detected — schedules paused by completed-goal sweep. Flagged for review.</div>
+    </div>
+  </div>
+
+  <div class="section" id="manifest">
+    <h2>FLEET MANIFEST — ALL PAST ARTIFACTS</h2>
+    <p class="muted">Every build shipped to date. Public artifacts open for anyone with the link; private artifacts open in Muse for the Captain.</p>
+    <div class="manifest">
+      <div class="mcard"><h3>3D See Through Brain</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>AI Exchange — Concentric Circles of Joy</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Bubble of Life — Level Three video</h3><div class="row"><span class="badge pub">PUBLIC</span><a class="open" href="https://muse.ai/s/bubble-of-life-level-three-video-xll5xdflxyxhxgpxp">OPEN &#8599;</a></div></div>
+      <div class="mcard"><h3>Dashboard</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Doctor Portal (Private Demo)</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Emergency Break-Glass Button</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Eve Voice Companion</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Family Connect</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>ManuelOps Release Event</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Mind Box</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Pianoamble by jrobert.manuel</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Private Web App</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Public Web App</h3><div class="row"><span class="badge pub">PUBLIC</span><a class="open" href="https://muse.ai/s/public-web-app-op5xddw8xnvx0xq">OPEN &#8599;</a></div></div>
+      <div class="mcard"><h3>Sentinel Security Console</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Ship's World</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Ship's World Demo</h3><div class="row"><span class="badge pub">PUBLIC</span><a class="open" href="https://muse.ai/s/ship-s-world-demo-vxv5xebpl6hln">OPEN &#8599;</a></div></div>
+      <div class="mcard"><h3>The Bridge</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Voice Recorder</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Web App</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
     </div>
   </div>
 
