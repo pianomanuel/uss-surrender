@@ -1,0 +1,113 @@
+# .github/workflows/pages-smoke.yml
+# Starter CI for pianomanuel/uss-surrender: smoke-test the live GitHub Pages
+# site AFTER each deploy to main.
+#
+# WHAT IT CHECKS
+#   1. The Pages build for the pushed commit finishes ("built", not "errored").
+#   2. https://pianomanuel.github.io/uss-surrender/ returns HTTP 200.
+#   3. The page <title> contains "USS Surrender".
+#   4. The 3 public Fleet Manifest artifact links are present in the deployed
+#      page AND each link resolves (not 404/410/5xx).
+#
+# FREE-TIER NOTES
+#   - uss-surrender is a PUBLIC repo: GitHub Actions standard-runner minutes
+#     are unlimited and free. This workflow costs ~1-2 min/run on ubuntu-latest.
+#   - No checkout, no uploaded artifacts, no extra services: nothing to bill.
+#   - Do NOT copy this blindly to the PRIVATE uss-nimitz-fury repo without
+#     noting it draws from the 2,000 min/month Free quota (still fine at this size).
+#
+# INSTALL
+#   1. Copy this file to .github/workflows/pages-smoke.yml in the repo.
+#   2. Commit + push to main. No secrets or settings changes needed.
+#   3. Watch it run: repo -> Actions tab -> "Pages smoke test".
+#   4. Manual re-run anytime: Actions tab -> "Pages smoke test" -> Run workflow.
+
+name: Pages smoke test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+  pages: read # needed to poll the Pages build status below
+
+# If several pushes land in a row, only smoke-test the newest commit.
+concurrency:
+  group: pages-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # GOTCHA: a plain `on: push` test would check the OLD deployment.
+      # "Deploy from a branch" Pages has no completion callback, so we poll the
+      # Pages Builds API until the build for THIS commit reports "built".
+      - name: Wait for Pages to finish deploying this commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHA="${{ github.sha }}"
+          echo "Waiting for Pages build of commit ${SHA:0:7} ..."
+          for i in $(seq 1 40); do
+            JSON=$(gh api "repos/${{ github.repository }}/pages/builds/latest" 2>/dev/null || echo '{}')
+            STATUS=$(echo "$JSON" | jq -r '.status // "unknown"')
+            COMMIT=$(echo "$JSON" | jq -r '.commit // ""')
+            echo "  poll $i/40: status=${STATUS} commit=${COMMIT:0:7}"
+            if [ "$COMMIT" = "$SHA" ] && [ "$STATUS" = "built" ]; then
+              echo "Pages build complete for this commit."
+              exit 0
+            fi
+            if [ "$COMMIT" = "$SHA" ] && [ "$STATUS" = "errored" ]; then
+              echo "::error::GitHub Pages build ERRORED for commit ${SHA:0:7}"
+              exit 1
+            fi
+            sleep 15
+          done
+          echo "::error::Timed out (10 min) waiting for Pages build of ${SHA:0:7}"
+          exit 1
+
+      - name: Smoke-test the live site
+        run: |
+          SITE="https://pianomanuel.github.io/uss-surrender/"
+          fail() { echo "::error::$1"; exit 1; }
+
+          # Retry the fetch: the Pages CDN can lag a minute behind "built".
+          echo "Fetching ${SITE} ..."
+          for i in 1 2 3 4 5 6; do
+            CODE=$(curl -sS -o /tmp/index.html -w '%{http_code}' --max-time 30 "$SITE") && [ "$CODE" = "200" ] && break
+            echo "  attempt $i: HTTP ${CODE:-curl-failed}; retrying in 20s"
+            sleep 20
+            [ "$i" = "6" ] && fail "Site did not return HTTP 200 after 6 attempts (last: ${CODE:-curl-failed})"
+          done
+          echo "HTTP 200 OK: ${SITE}"
+
+          grep -qi '<title>[^<]*USS Surrender' /tmp/index.html \
+            || fail "Page <title> does not contain 'USS Surrender'"
+          echo "Title check OK"
+
+          # The 3 public Fleet Manifest links must still be present in the deployed
+          # page (guards the "hyperlinks are dead" regression) and must resolve.
+          # NOTE: muse.ai share links return 403 to bot traffic, so "reachable"
+          # here means: we got an HTTP response that is NOT 404/410/5xx and curl
+          # itself succeeded. A deleted/expired share would return 404.
+          UA="Mozilla/5.0 (compatible; USS-Surrender-SmokeTest/1.0)"
+          for URL in \
+            "https://muse.ai/s/bubble-of-life-level-three-video-xll5xdflxyxhxgpxp" \
+            "https://muse.ai/s/public-web-app-op5xddw8xnvx0xq" \
+            "https://muse.ai/s/ship-s-world-demo-vxv5xebpl6hln" ; do
+            grep -q "$URL" /tmp/index.html \
+              || fail "Manifest link missing from deployed page: $URL"
+            CODE=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 -L -A "$UA" "$URL") \
+              || fail "Could not reach $URL (connection failed)"
+            case "$CODE" in
+              404|410) fail "Artifact link is dead (HTTP $CODE): $URL" ;;
+              5*)      fail "Artifact host error (HTTP $CODE): $URL" ;;
+            esac
+            echo "Link alive (HTTP $CODE): $URL"
+          done
+
+          echo "ALL SMOKE CHECKS PASSED"
