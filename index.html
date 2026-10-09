@@ -87,9 +87,59 @@
   }
   footer a{color:var(--blue); text-decoration:none; margin-right:16px;}
   footer a:hover{text-decoration:underline;}
+  /* Fly-in navigation */
+  #menuBtn{
+    background:var(--panel2); color:var(--amber); border:1px solid var(--line);
+    border-radius:10px; font-size:22px; line-height:1; padding:10px 14px; cursor:pointer;
+  }
+  #menuBtn:hover{border-color:var(--amber);}
+  #flyin{
+    position:fixed; top:0; right:0; height:100vh; width:280px; max-width:85vw;
+    background:var(--panel2); border-left:1px solid var(--line);
+    transform:translateX(100%); transition:transform .28s ease;
+    z-index:50; padding:20px; display:flex; flex-direction:column; gap:4px;
+  }
+  #flyin.open{transform:translateX(0);}
+  #flyin .nav-head{
+    display:flex; justify-content:space-between; align-items:center;
+    color:var(--amber); font-size:13px; letter-spacing:3px; margin-bottom:12px;
+  }
+  #menuClose{
+    background:none; border:none; color:var(--dim); font-size:28px; cursor:pointer; line-height:1;
+  }
+  #menuClose:hover{color:var(--txt);}
+  #flyin a{
+    color:var(--txt); text-decoration:none; font-size:14px; letter-spacing:1px;
+    padding:12px 10px; border-radius:8px;
+  }
+  #flyin a:hover{background:var(--panel); color:var(--amber);}
+  #flyin .nav-div{
+    color:var(--dim); font-size:11px; letter-spacing:3px; margin:14px 10px 4px;
+    border-top:1px solid var(--line); padding-top:14px;
+  }
+  #scrim{
+    position:fixed; inset:0; background:rgba(0,0,0,.55);
+    opacity:0; pointer-events:none; transition:opacity .28s ease; z-index:40;
+  }
+  #scrim.show{opacity:1; pointer-events:auto;}
+  html{scroll-behavior:smooth;}
 </style>
 </head>
 <body>
+<nav id="flyin" aria-label="Bridge navigation">
+  <div class="nav-head">
+    <span>NAVIGATION</span>
+    <button id="menuClose" aria-label="Close navigation menu">&times;</button>
+  </div>
+  <a href="#systems">Ship Systems</a>
+  <a href="#loop">The Loop</a>
+  <a href="#approvals">Approval Queue</a>
+  <a href="#log">Ship's Log</a>
+  <div class="nav-div">EXTERNAL</div>
+  <a href="https://github.com/pianomanuel/uss-surrender">Ship's Repository</a>
+  <a href="https://pianomanuel.atlassian.net/jira/software/projects/PMC/boards/37/backlog">PMC Backlog</a>
+</nav>
+<div id="scrim"></div>
 <div class="wrap">
 
   <header>
@@ -98,9 +148,10 @@
       <div class="sub">BRIDGE COMMAND DASHBOARD</div>
     </div>
     <div class="alert"><span class="dot"></span>ALL SYSTEMS NOMINAL</div>
+    <button id="menuBtn" aria-label="Open navigation menu" aria-expanded="false">&#9776;</button>
   </header>
 
-  <div class="section">
+  <div class="section" id="systems">
     <h2>SHIP SYSTEMS</h2>
     <div class="grid">
       <div class="card"><h3><span class="st ok"></span>BRIDGE</h3><p>Central command dashboard and main app UI. All logs, approvals and status reports flow through here.</p></div>
@@ -118,7 +169,7 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section" id="loop">
     <h2>THE LOOP — LAW OF THE SHIP</h2>
     <div class="loop">
       <div class="stage"><b>INTAKE</b><span>chat · docs · email · code</span></div>
@@ -131,7 +182,7 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section" id="approvals">
     <h2>CAPTAIN'S APPROVAL QUEUE</h2>
     <div class="card" style="padding:0; overflow:hidden;">
       <table>
@@ -144,7 +195,7 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section" id="log">
     <h2>SHIP'S LOG — RECENT ENTRIES</h2>
     <div class="card log">
       <div><span class="t">2026-10-08 22:05</span> — <b>Bridge:</b> command dashboard commissioned by the Captain. All stations reporting.</div>
@@ -163,5 +214,28 @@
   </footer>
 
 </div>
+<script>
+(function(){
+  var btn=document.getElementById('menuBtn'),
+      panel=document.getElementById('flyin'),
+      close=document.getElementById('menuClose'),
+      scrim=document.getElementById('scrim');
+  function open(){
+    panel.classList.add('open'); scrim.classList.add('show');
+    btn.setAttribute('aria-expanded','true');
+  }
+  function shut(){
+    panel.classList.remove('open'); scrim.classList.remove('show');
+    btn.setAttribute('aria-expanded','false');
+  }
+  btn.addEventListener('click',function(){
+    panel.classList.contains('open')?shut():open();
+  });
+  close.addEventListener('click',shut);
+  scrim.addEventListener('click',shut);
+  panel.querySelectorAll('a').forEach(function(a){a.addEventListener('click',shut);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')shut();});
+})();
+</script>
 </body>
 </html>
