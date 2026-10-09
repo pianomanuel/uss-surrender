@@ -2,326 +2,166 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#03060c">
-<title>USS Floor 13 — Deck Lift</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USS Surrender — Bridge Command Dashboard</title>
 <style>
-:root{
-  --cyan:#7ee7ff; --cyan2:#2aa8c9; --ice:#c9f4ff; --ok:#7dffc2;
-  --warn:#ff6b7a; --panel:#071018; --steel:#0b141c; --line:#1c3a48;
-  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;min-height:100%;background:
-  radial-gradient(900px 500px at 50% -8%,#123044 0%,#03060c 52%),
-  repeating-linear-gradient(90deg,transparent 0 48px,#061018 48px 49px);
-  color:#d7eef6;font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,sans-serif;}
-body{padding:calc(var(--sat) + 12px) 14px calc(var(--sab) + 18px);}
-.wrap{max-width:430px;margin:0 auto}
-.ship{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--cyan2);margin:0}
-h1{margin:4px 0 2px;font-size:20px;letter-spacing:.16em;text-transform:uppercase;color:var(--ice);font-weight:650}
-.sub{margin:0 0 14px;color:#6f8b97;font-size:12px}
-.cab{
-  background:linear-gradient(180deg,#10202b,#071018 46%,#05090d);
-  border:1px solid var(--line);border-radius:8px;padding:16px 14px 14px;
-  box-shadow:0 0 0 1px #061018, 0 24px 50px rgba(0,0,0,.55), inset 0 0 40px rgba(40,160,200,.06);
-}
-.display{
-  background:#02060a;border:1px solid #245060;border-radius:4px;padding:10px 12px;margin-bottom:14px;
-  display:flex;justify-content:space-between;align-items:center;
-  font-variant-numeric:tabular-nums;
-}
-.floor-read{font-size:30px;color:var(--cyan);text-shadow:0 0 14px rgba(126,231,255,.45);letter-spacing:.14em;font-weight:600}
-.floor-label{font-size:10px;color:#5e7d8a;letter-spacing:.2em;text-transform:uppercase}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.btn{
-  aspect-ratio:1.15;border-radius:4px;border:1px solid #2a5160;background:#0b1820;
-  color:#9ec4d2;font-weight:700;font-size:15px;letter-spacing:.08em;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
-}
-.btn:active{background:#102430}
-.btn.on{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 12px rgba(126,231,255,.28)}
-.btn.ghost{opacity:.38}
-.btn.thirteen{
-  border-color:#7a3040;color:#ffc4c8;background:#18080c;letter-spacing:.1em;font-size:13px;
-}
-.btn.thirteen.on{border-color:var(--warn);color:#fff;box-shadow:0 0 16px rgba(255,80,90,.35)}
-.panel{display:none;margin-top:14px;padding-top:12px;border-top:1px solid #1c3a48}
-.panel.open{display:block}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}
-.chip{
-  flex:1;min-width:96px;border:1px solid #2a5160;background:#0b1820;color:#d7eef6;
-  border-radius:4px;padding:10px 8px;font-size:13px;text-align:left;
-}
-.chip.on{background:#102c38;border-color:var(--cyan);color:var(--cyan)}
-.chip small{display:block;color:#6f8b97;font-size:10px;margin-top:3px;letter-spacing:.08em;text-transform:uppercase}
-label.vol{display:block;font-size:10px;color:#6f8b97;margin:8px 0 4px;letter-spacing:.12em;text-transform:uppercase}
-input[type=range]{width:100%;accent-color:var(--cyan2)}
-.status{min-height:1.35em;font-size:12px;color:#9ec4d2;margin-top:8px}
-.hint{font-size:11px;color:#5e7d8a;line-height:1.45;margin:10px 0 0}
-.tick{height:6px;background:repeating-linear-gradient(90deg,var(--cyan2) 0 8px,transparent 8px 16px);opacity:.35;margin:0 0 12px}
-.lock{margin-top:14px;padding-top:12px;border-top:1px solid #1c3a48}
-.lock.gone{display:none}
-.lock input{
-  width:100%;background:#02060a;border:1px solid #2a5160;color:var(--ice);
-  border-radius:4px;padding:12px 10px;font-size:16px;letter-spacing:.12em;
-}
-.lock button{margin-top:8px;width:100%}
-
+  :root{
+    --bg:#060a14; --panel:#0c1426; --panel2:#101b33;
+    --line:#1e2c4d; --txt:#d7e3f8; --dim:#8fa3c7;
+    --amber:#ffb454; --green:#3ddc84; --red:#ff5d5d; --blue:#5aa9ff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    min-height:100vh; padding:24px;
+    background-image:radial-gradient(1px 1px at 12% 22%, #fff 100%, transparent 100%),
+      radial-gradient(1px 1px at 68% 8%, #fff 100%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 84% 64%, #cfe0ff 100%, transparent 100%),
+      radial-gradient(1px 1px at 32% 78%, #fff 100%, transparent 100%),
+      radial-gradient(1px 1px at 52% 42%, #cfe0ff 100%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 8% 88%, #fff 100%, transparent 100%);
+  }
+  .wrap{max-width:1200px; margin:0 auto;}
+  header{
+    display:flex; justify-content:space-between; align-items:center;
+    border:1px solid var(--line); border-radius:12px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));
+    padding:20px 24px; margin-bottom:20px;
+  }
+  header h1{font-size:26px; letter-spacing:3px;}
+  header h1 span{color:var(--amber);}
+  .sub{color:var(--dim); font-size:13px; letter-spacing:2px; margin-top:4px;}
+  .alert{
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--green); color:var(--green);
+    padding:10px 16px; border-radius:999px; font-size:13px; letter-spacing:2px;
+  }
+  .dot{width:10px; height:10px; border-radius:50%; background:var(--green);
+    box-shadow:0 0 8px var(--green); animation:pulse 2s infinite;}
+  @keyframes pulse{50%{opacity:.5;}}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; margin-bottom:20px;}
+  .card{
+    border:1px solid var(--line); border-radius:10px;
+    background:var(--panel); padding:16px;
+  }
+  .card h3{font-size:14px; letter-spacing:1.5px; margin-bottom:4px; display:flex; align-items:center; gap:8px;}
+  .card p{font-size:12.5px; color:var(--dim); line-height:1.5;}
+  .st{width:9px; height:9px; border-radius:50%; display:inline-block; flex:none;}
+  .ok{background:var(--green); box-shadow:0 0 6px var(--green);}
+  .warn{background:var(--amber); box-shadow:0 0 6px var(--amber);}
+  .section{margin-bottom:20px;}
+  .section > h2{
+    font-size:15px; letter-spacing:3px; color:var(--amber);
+    margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;
+  }
+  .loop{display:flex; flex-wrap:wrap; gap:0; align-items:stretch;}
+  .stage{
+    flex:1 1 120px; text-align:center; padding:14px 8px;
+    border:1px solid var(--line); background:var(--panel);
+    font-size:12px; letter-spacing:1.5px; position:relative;
+  }
+  .stage:first-child{border-radius:10px 0 0 10px;}
+  .stage:last-child{border-radius:0 10px 10px 0;}
+  .stage:not(:last-child)::after{
+    content:"›"; position:absolute; right:-9px; top:50%; transform:translateY(-50%);
+    color:var(--amber); font-size:20px; z-index:1;
+  }
+  .stage b{display:block; font-size:13px; margin-bottom:4px; color:var(--txt);}
+  .stage span{color:var(--dim); font-size:11px;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; color:var(--dim); font-weight:600; letter-spacing:1px;
+    padding:10px 12px; border-bottom:1px solid var(--line); font-size:11px;}
+  td{padding:10px 12px; border-bottom:1px solid #141f38;}
+  tr:last-child td{border-bottom:none;}
+  .pill{display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; letter-spacing:1px;}
+  .p-await{border:1px solid var(--amber); color:var(--amber);}
+  .p-done{border:1px solid var(--green); color:var(--green);}
+  .log{font-size:12.5px; color:var(--dim); line-height:1.9;}
+  .log b{color:var(--txt); font-weight:600;}
+  .log .t{color:var(--blue);}
+  footer{
+    margin-top:24px; padding-top:16px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    font-size:12px; color:var(--dim);
+  }
+  footer a{color:var(--blue); text-decoration:none; margin-right:16px;}
+  footer a:hover{text-decoration:underline;}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <p class="ship">U.S.S. Surrender · lift control</p>
-  <h1>Deck 13</h1>
-  <p class="sub">Starship car. Public decks are empty. Thirteen is restricted.</p>
-  <div class="cab">
-    <div class="tick"></div>
-    <div class="display">
-      <div>
-        <div class="floor-label">Deck</div>
-        <div class="floor-read" id="readout">L</div>
-      </div>
-      <div style="text-align:right">
-        <div class="floor-label" id="mode">Transit</div>
-        <div style="font-size:11px;color:#5e7d8a" id="lamp">Bulkhead sealed</div>
-      </div>
-    </div>
-    <div class="grid" id="grid"></div>
-    <div class="lock" id="lock">
-      <label class="vol">Restricted access · our secret</label>
-      <input id="secret" type="password" autocomplete="off" placeholder="say it" enterkeyhint="go">
-      <button class="chip" id="unlock" style="width:100%;margin-top:8px;text-align:center"><b>Open bulkhead</b><small>Deck 13</small></button>
-      <div class="status" id="lockstat">Thirteen hears you. Speak the word.</div>
-    </div>
-    <div class="panel" id="panel">
-      <div class="row">
-        <button class="chip" data-bed="cabin"><b>Cabin</b><small>Fire / wind hull</small></button>
-        <button class="chip" data-bed="home"><b>Quarters</b><small>Fan / ceiling</small></button>
-        <button class="chip" data-bed="nylon"><b>Nylon</b><small>Close mic</small></button>
-      </div>
-      <label class="vol">Audiobooks</label>
-      <div class="row">
-        <button class="chip" data-voice="chapter"><b>Weekend Ch2</b><small>4:40 Eve MP3</small></button>
-        <button class="chip" data-voice="loop"><b>Good boy</b><small>1:04 Eve loop</small></button>
-      </div>
-      <div class="row">
-        <button class="chip" data-voice="thought"><b>Thought Stays</b><small>2:26 Eve MP3</small></button>
-        <button class="chip" data-speak="ch1"><b>The Climb</b><small>full script / short MP3</small></button>
-      </div>
 
+  <header>
+    <div>
+      <h1>USS <span>SURRENDER</span></h1>
+      <div class="sub">BRIDGE COMMAND DASHBOARD</div>
+    </div>
+    <div class="alert"><span class="dot"></span>ALL SYSTEMS NOMINAL</div>
+  </header>
 
-      <div class="row">
-        <button class="chip on" id="restraints"><b>Restraints</b><small>Wrists / ankles locked</small></button>
-      </div>
-      <p class="hint" id="bindcopy">You are already tied. Soft cuffs at both wrists, line to the bunk rail. Ankles apart. Cock out. Mouth free. Hands stay useless. The panel is for her, not for you.</p>
-      <label class="vol">Atmosphere <span id="bv">28%</span></label>
-      <input id="bedVol" type="range" min="0" max="70" value="28">
-      <label class="vol">Comms <span id="vv">100%</span></label>
-      <input id="voiceVol" type="range" min="20" max="100" value="100">
-      <div class="row">
-        <button class="chip" id="stopAll">Kill audio</button>
-      </div>
-      <div class="status" id="status">Restricted deck unlocked. Choose atmosphere. Then comms.</div>
-      <p class="hint">Deck 13 is the private floor of the ship. Cabin hull for the Alps. Quarters fan when you are home. Nylon only when the mouth is working. Eve rides comms. Praise is an event unless you arm the loop.</p>
+  <div class="section">
+    <h2>SHIP SYSTEMS</h2>
+    <div class="grid">
+      <div class="card"><h3><span class="st ok"></span>BRIDGE</h3><p>Central command dashboard and main app UI. All logs, approvals and status reports flow through here.</p></div>
+      <div class="card"><h3><span class="st ok"></span>SHIP'S COMPUTER</h3><p>Database and AI agent core. Crew registry, memory banks and inference engines online.</p></div>
+      <div class="card"><h3><span class="st ok"></span>THE DOCK</h3><p>Deployment and CI/CD environment. Transporter pipeline standing by for the next release.</p></div>
+      <div class="card"><h3><span class="st ok"></span>SUBSPACE RADIO</h3><p>Monitoring and alert system. Logs, metrics and external integrations reporting in.</p></div>
+      <div class="card"><h3><span class="st ok"></span>WARP CORE</h3><p>Processing and energy engine. Compute budget healthy; burst capacity reserved.</p></div>
+      <div class="card"><h3><span class="st ok"></span>TRANSPORTER &amp; LIFT</h3><p>Deploy pipeline. Code and content beam from dock to production with full transport logs.</p></div>
+      <div class="card"><h3><span class="st warn"></span>HOLODECK</h3><p>Isolated sandbox for experiments. One simulation queued for Bridge review.</p></div>
+      <div class="card"><h3><span class="st ok"></span>CLOAKING DEVICE</h3><p>Privacy layer engaged. Personal data hidden; only the public shell is visible.</p></div>
+      <div class="card"><h3><span class="st ok"></span>SHUTTLECRAFT FLEET</h3><p>Satellite apps docked and reporting. Independently deployable, recallable, scrappable.</p></div>
+      <div class="card"><h3><span class="st ok"></span>MEDICAL BAY</h3><p>Data recovery, backup and healing. Diagnostics green; quarantine empty.</p></div>
+      <div class="card"><h3><span class="st ok"></span>IMPULSE / WARP DRIVE</h3><p>Two-speed operations. Impulse for daily routine, warp reserved for burst tasks.</p></div>
+      <div class="card"><h3><span class="st ok"></span>VOID PORTS</h3><p>Secondary AI entry points sealed. Open only while a specific task is active.</p></div>
     </div>
   </div>
+
+  <div class="section">
+    <h2>THE LOOP — LAW OF THE SHIP</h2>
+    <div class="loop">
+      <div class="stage"><b>INTAKE</b><span>chat · docs · email · code</span></div>
+      <div class="stage"><b>DESIGN</b><span>every change a CR</span></div>
+      <div class="stage"><b>BUILD</b><span>demoed &amp; logged</span></div>
+      <div class="stage"><b>TEST</b><span>V&amp;V gates</span></div>
+      <div class="stage"><b>DEPLOY</b><span>transporter log</span></div>
+      <div class="stage"><b>MONITOR</b><span>subspace radio</span></div>
+      <div class="stage"><b>FEEDBACK</b><span>back to intake</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>CAPTAIN'S APPROVAL QUEUE</h2>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table>
+        <tr><th>ITEM</th><th>TYPE</th><th>STATUS</th></tr>
+        <tr><td>Bridge dashboard public alpha</td><td>Release</td><td><span class="pill p-await">AWAITING CAPTAIN</span></td></tr>
+        <tr><td>Holodeck simulation review</td><td>Experiment</td><td><span class="pill p-await">AWAITING CAPTAIN</span></td></tr>
+        <tr><td>Age-gate design (self-attest)</td><td>Design</td><td><span class="pill p-await">AWAITING CAPTAIN</span></td></tr>
+        <tr><td>Nightly mirror verification</td><td>Operations</td><td><span class="pill p-done">CLEARED</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>SHIP'S LOG — RECENT ENTRIES</h2>
+    <div class="card log">
+      <div><span class="t">2026-10-08 22:05</span> — <b>Bridge:</b> command dashboard commissioned by the Captain. All stations reporting.</div>
+      <div><span class="t">2026-10-08 21:50</span> — <b>Ship's Computer:</b> PMC backlog export secured — 330 issues archived to the dock.</div>
+      <div><span class="t">2026-10-08 21:55</span> — <b>Medical Bay:</b> overnight build schedules restored after erroneous stand-down. All sprints building.</div>
+      <div><span class="t">2026-10-07 20:37</span> — <b>Subspace Radio:</b> false stand-down detected — schedules paused by completed-goal sweep. Flagged for review.</div>
+    </div>
+  </div>
+
+  <footer>
+    <div>
+      <a href="https://github.com/pianomanuel/uss-surrender">Ship's repository</a>
+      <a href="https://pianomanuel.atlassian.net/jira/software/projects/PMC/boards/37/backlog">PMC backlog</a>
+    </div>
+    <div>USS Surrender · Bridge Command · Captain's eyes only until release</div>
+  </footer>
+
 </div>
-<script>
-const decks = ["BR","14","15","11","10","9","8","7","6","5","4","3","2","1","13","L"];
-const grid = document.getElementById("grid");
-decks.forEach(f => {
-  const b = document.createElement("button");
-  b.className = "btn" + (f === "13" ? " thirteen" : (f === "BR" || f === "14" || f === "15" || f === "L" ? " ghost" : ""));
-  b.textContent = f;
-  b.dataset.floor = f;
-  grid.appendChild(b);
-});
-
-const beds = {
-  cabin: new Audio("cabin-fire-wind-bed.mp3"),
-  home: new Audio("home-fan-ceiling-bed.mp3"),
-  nylon: new Audio("nylon-breath-bed.mp3")
-};
-const voices = {
-  chapter: new Audio("eve-chapter-two-out-loud.mp3"),
-  loop: new Audio("eve-good-boy-loop.mp3"),
-  thought: new Audio("audiobook-chapter-two-thought-that-stays.mp3"),
-  climbmp3: new Audio("audiobook-chapter-one-the-climb.mp3")
-};
-
-Object.values(beds).forEach(a => { a.loop = true; a.preload = "auto"; });
-Object.values(voices).forEach(a => { a.preload = "auto"; });
-voices.loop.loop = true;
-
-let activeBed = null, activeVoice = null;
-
-function setBedVol(){
-  const v = document.getElementById("bedVol").value / 100;
-  document.getElementById("bv").textContent = document.getElementById("bedVol").value + "%";
-  Object.values(beds).forEach(a => a.volume = v);
-}
-function setVoiceVol(){
-  const v = document.getElementById("voiceVol").value / 100;
-  document.getElementById("vv").textContent = document.getElementById("voiceVol").value + "%";
-  Object.values(voices).forEach(a => a.volume = v);
-}
-setBedVol(); setVoiceVol();
-document.getElementById("bedVol").oninput = setBedVol;
-document.getElementById("voiceVol").oninput = setVoiceVol;
-
-function stopBeds(){ Object.values(beds).forEach(a => { a.pause(); a.currentTime = 0; }); activeBed = null; document.querySelectorAll("[data-bed]").forEach(c => c.classList.remove("on")); }
-function stopSpeak(){
-  if(window.speechSynthesis) speechSynthesis.cancel();
-  document.querySelectorAll("[data-speak]").forEach(c => c.classList.remove("on"));
-  activeSpeak = null;
-}
-function stopVoices(){
-  Object.values(voices).forEach(a => { a.pause(); a.currentTime = 0; });
-  activeVoice = null;
-  document.querySelectorAll("[data-voice]").forEach(c => c.classList.remove("on"));
-  stopSpeak();
-}
-let activeSpeak = null;
-const scripts = {
-  ch1: "deck13-chapter-one.txt",
-  thought: "deck13-thought-that-stays.txt"
-};
-async function speakFile(key){
-  stopSpeak();
-  Object.values(voices).forEach(a => { a.pause(); });
-  document.querySelectorAll("[data-voice]").forEach(c => c.classList.remove("on"));
-  activeVoice = null;
-  const res = await fetch(scripts[key]);
-  const text = await res.text();
-  const parts = text.split(/\n+/).map(s => s.trim()).filter(Boolean);
-  activeSpeak = key;
-  document.querySelectorAll("[data-speak]").forEach(c => c.classList.toggle("on", c.dataset.speak === key));
-  document.getElementById("status").textContent = key === "ch1" ? "Comms: The Climb." : "Comms: The Thought That Stays.";
-  const rate = 0.88;
-  const vol = document.getElementById("voiceVol").value / 100;
-  const speakNext = (i) => {
-    if(activeSpeak !== key || i >= parts.length){
-      if(activeSpeak === key){ activeSpeak = null; document.querySelectorAll("[data-speak]").forEach(c => c.classList.remove("on")); }
-      return;
-    }
-    const u = new SpeechSynthesisUtterance(parts[i]);
-    u.rate = rate; u.volume = vol; u.pitch = 0.95;
-    u.onend = () => speakNext(i + 1);
-    speechSynthesis.speak(u);
-  };
-  speakNext(0);
-}
-
-
-function norm(s){ return (s || "").toLowerCase().replace(/\s+/g,"").replace(/[^a-z]/g,""); }
-let cleared = sessionStorage.getItem("deck13") === "open";
-
-function openDeck13(){
-  cleared = true;
-  sessionStorage.setItem("deck13","open");
-  document.getElementById("lock").classList.add("gone");
-  document.getElementById("panel").classList.add("open");
-  document.getElementById("mode").textContent = "Restricted";
-  document.getElementById("lamp").textContent = "Bulkhead open";
-  document.getElementById("readout").textContent = "13";
-  document.getElementById("status").textContent = "Good boy. Restraints green. You do not get your hands.";
-}
-
-function tryUnlock(){
-  const word = norm(document.getElementById("secret").value);
-  if(word === "goodboy"){
-    openDeck13();
-  } else {
-    document.getElementById("lockstat").textContent = "Wrong word. Try the one she uses on you.";
-    document.getElementById("secret").value = "";
-    document.getElementById("secret").focus();
-  }
-}
-document.getElementById("restraints").onclick = () => {
-  document.getElementById("status").textContent = "Still tied. Wrists. Ankles. Cock ignored unless she uses it. Mouth works.";
-};
-
-document.getElementById("unlock").onclick = tryUnlock;
-document.getElementById("secret").addEventListener("keydown", e => { if(e.key === "Enter") tryUnlock(); });
-
-
-grid.addEventListener("click", e => {
-  const b = e.target.closest(".btn"); if(!b) return;
-  const f = b.dataset.floor;
-  document.querySelectorAll(".btn").forEach(x => x.classList.remove("on"));
-  b.classList.add("on");
-  document.getElementById("readout").textContent = f;
-  if(f === "13"){
-    document.getElementById("mode").textContent = "Restricted";
-    if(cleared){
-      openDeck13();
-    } else {
-      document.getElementById("lamp").textContent = "Word required";
-      document.getElementById("lock").classList.remove("gone");
-      document.getElementById("panel").classList.remove("open");
-      document.getElementById("lockstat").textContent = "Our secret. One word. No space.";
-      document.getElementById("secret").focus();
-    }
-  } else {
-    document.getElementById("mode").textContent = "Public";
-    document.getElementById("lamp").textContent = "No access";
-    document.getElementById("status").textContent = "That deck is empty. Thirteen is the room.";
-  }
-});
-
-document.getElementById("panel").addEventListener("click", async e => {
-  const bedBtn = e.target.closest("[data-bed]");
-  const voiceBtn = e.target.closest("[data-voice]");
-  const speakBtn = e.target.closest("[data-speak]");
-  if(e.target.id === "stopAll" || e.target.closest("#stopAll")){
-    stopBeds(); stopVoices();
-    document.getElementById("status").textContent = "Audio killed. Still on Deck 13.";
-    return;
-  }
-  if(bedBtn){
-    const key = bedBtn.dataset.bed;
-    if(activeBed === key){ beds[key].pause(); activeBed = null; bedBtn.classList.remove("on"); return; }
-    Object.values(beds).forEach(a => { a.pause(); });
-    document.querySelectorAll("[data-bed]").forEach(c => c.classList.remove("on"));
-    try { await beds[key].play(); activeBed = key; bedBtn.classList.add("on"); document.getElementById("status").textContent = "Atmosphere: " + key + "."; }
-    catch(err){ document.getElementById("status").textContent = "Authorize audio, press again."; }
-  }
-  if(voiceBtn){
-    const key = voiceBtn.dataset.voice;
-    stopSpeak();
-    if(activeVoice === key){ voices[key].pause(); activeVoice = null; voiceBtn.classList.remove("on"); return; }
-    Object.values(voices).forEach(a => { a.pause(); a.currentTime = 0; });
-    document.querySelectorAll("[data-voice]").forEach(c => c.classList.remove("on"));
-    try { await voices[key].play(); activeVoice = key; voiceBtn.classList.add("on"); document.getElementById("status").textContent = key === "loop" ? "Comms: good-boy loop." : "Comms: Weekend Chapter Two."; }
-    catch(err){ document.getElementById("status").textContent = "Authorize audio, press again."; }
-  }
-  if(speakBtn){
-    const key = speakBtn.dataset.speak;
-    if(activeSpeak === key){ stopSpeak(); document.getElementById("status").textContent = "Comms cut."; return; }
-    try { await speakFile(key); }
-    catch(err){ document.getElementById("status").textContent = "Keep the script txt files next to this page."; }
-  }
-});
-
-  if(bedBtn){
-    const key = bedBtn.dataset.bed;
-    if(activeBed === key){ beds[key].pause(); activeBed = null; bedBtn.classList.remove("on"); return; }
-    Object.values(beds).forEach(a => { a.pause(); });
-    document.querySelectorAll("[data-bed]").forEach(c => c.classList.remove("on"));
-    try { await beds[key].play(); activeBed = key; bedBtn.classList.add("on"); document.getElementById("status").textContent = "Atmosphere: " + key + "."; }
-    catch(err){ document.getElementById("status").textContent = "Authorize audio, press again."; }
-  }
-  if(voiceBtn){
-    const key = voiceBtn.dataset.voice;
-    if(activeVoice === key){ voices[key].pause(); activeVoice = null; voiceBtn.classList.remove("on"); return; }
-    Object.values(voices).forEach(a => { a.pause(); a.currentTime = 0; });
-    document.querySelectorAll("[data-voice]").forEach(c => c.classList.remove("on"));
-    try { await voices[key].play(); activeVoice = key; voiceBtn.classList.add("on"); document.getElementById("status").textContent = key === "loop" ? "Comms: good-boy loop." : "Comms: Chapter Two."; }
-    catch(err){ document.getElementById("status").textContent = "Authorize audio, press again."; }
-  }
-});
-</script>
 </body>
 </html>
