@@ -2,6 +2,7 @@ import importlib.util
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 SCRIPT = Path(__file__).parents[1] / "scripts" / "check_static_site.py"
@@ -56,6 +57,26 @@ class PublishManifestTests(unittest.TestCase):
         errors = checker.check_site(self.repo, self.manifest)
         self.assertEqual(["publish_tree_allowlist_mismatch"], errors)
         self.assertNotIn("restricted-note", " ".join(errors))
+        self.assertNotIn("synthetic-private-marker", " ".join(errors))
+
+    def test_private_sibling_is_not_opened_or_disclosed(self):
+        private = self.repo / "private-sibling"
+        private.mkdir()
+        private_file = private / "synthetic-private.html"
+        private_file.write_text("synthetic-private-marker", encoding="utf-8")
+        opened = []
+        original_read_text = Path.read_text
+
+        def tracked_read_text(path, *args, **kwargs):
+            if path.resolve() == private_file.resolve():
+                opened.append(path)
+            return original_read_text(path, *args, **kwargs)
+
+        with patch.object(Path, "read_text", tracked_read_text):
+            errors = checker.check_site(self.repo, self.manifest)
+
+        self.assertEqual([], errors)
+        self.assertEqual([], opened)
         self.assertNotIn("synthetic-private-marker", " ".join(errors))
 
     def test_broken_link_fails_without_disclosing_target(self):
