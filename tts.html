@@ -358,7 +358,7 @@ h1.eve-title {
   </div>
 
   <h1 class="eve-title">Eve</h1>
-  <p class="subtitle">Fully AI-driven. Speak or type. She thinks, answers, and speaks.</p>
+  <p class="subtitle">Fully AI-driven with voice. Speak or type. She thinks, answers, and speaks.</p>
 
   <div class="eve-presence">
     <div class="avatar" id="avatar">
@@ -368,17 +368,22 @@ h1.eve-title {
       </div>
     </div>
   </div>
-  <div class="status-line" id="status">Ready. Tap mic or type. (Set API key in gear for AI)</div>
+  <div class="status-line" id="status">Ready. Tap mic or type. (Gear for AI + voice keys)</div>
 
   <div class="settings" id="settings">
-    <label>API Base URL (OpenAI-compatible)</label>
+    <label>AI API Base URL</label>
     <input id="apiBase" type="text" placeholder="https://api.x.ai/v1" value="https://api.x.ai/v1" />
-    <label>API Key (stored only in this browser)</label>
-    <input id="apiKey" type="password" placeholder="sk-... or xai-..." />
-    <label>Model</label>
+    <label>AI API Key</label>
+    <input id="apiKey" type="password" placeholder="xai-... or sk-..." />
+    <label>AI Model</label>
     <input id="apiModel" type="text" placeholder="grok-4" value="grok-4" />
+    <hr style="border:none;border-top:1px solid #eee;margin:12px 0;">
+    <label>TTS API Key (optional, ElevenLabs-style for richer voice)</label>
+    <input id="ttsKey" type="password" placeholder="xi-... or leave blank for browser voice" />
+    <label>TTS Voice ID</label>
+    <input id="ttsVoice" type="text" placeholder="21m00Tcm4TlvDq8ikWAM" value="21m00Tcm4TlvDq8ikWAM" />
     <button id="saveSettings">Save & close</button>
-    <button id="clearSettings" style="background:#a00;margin-left:8px;">Clear key</button>
+    <button id="clearSettings" style="background:#a00;margin-left:8px;">Clear keys</button>
   </div>
 
   <div class="chat-card" id="chat">
@@ -392,7 +397,7 @@ h1.eve-title {
     <button class="mic-btn" id="mic" title="Tap to speak">🎙</button>
     <input type="text" id="input" placeholder="Or type here" />
     <button class="send-btn" id="send">Send</button>
-    <button class="gear-btn" id="gear" title="AI settings">⚙</button>
+    <button class="gear-btn" id="gear" title="AI + voice settings">⚙</button>
   </div>
 
   <div class="player-bar" id="player">
@@ -404,6 +409,8 @@ h1.eve-title {
     <button>🖥️</button>
     <button>⋯</button>
   </div>
+
+  <audio id="neuralAudio" style="display:none;"></audio>
 
   <script>
     const chat = document.getElementById('chat');
@@ -420,6 +427,9 @@ h1.eve-title {
     const apiBaseEl = document.getElementById('apiBase');
     const apiKeyEl = document.getElementById('apiKey');
     const apiModelEl = document.getElementById('apiModel');
+    const ttsKeyEl = document.getElementById('ttsKey');
+    const ttsVoiceEl = document.getElementById('ttsVoice');
+    const neuralAudio = document.getElementById('neuralAudio');
 
     let recognition = null;
     let listening = false;
@@ -427,35 +437,40 @@ h1.eve-title {
     let conversation = [
       { role: 'system', content: 'You are Eve, a calm, warm, attentive presence on the Listen Court of the USS Surrender, deck three, protected. Speak naturally, in short spoken sentences. Answer helpfully. You hear the user and reply so they can hear you. Keep responses concise for speech (1-3 sentences).' }
     ];
+    let currentAudio = null;
 
-    // Load settings
     function loadSettings() {
       const s = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
       if (s.base) apiBaseEl.value = s.base;
       if (s.key) apiKeyEl.value = s.key;
       if (s.model) apiModelEl.value = s.model;
-      updateStatusForKey();
+      if (s.ttsKey) ttsKeyEl.value = s.ttsKey;
+      if (s.ttsVoice) ttsVoiceEl.value = s.ttsVoice;
+      updateStatus();
     }
     function saveSettings() {
       const s = {
         base: apiBaseEl.value.trim() || 'https://api.x.ai/v1',
         key: apiKeyEl.value.trim(),
-        model: apiModelEl.value.trim() || 'grok-4'
+        model: apiModelEl.value.trim() || 'grok-4',
+        ttsKey: ttsKeyEl.value.trim(),
+        ttsVoice: ttsVoiceEl.value.trim() || '21m00Tcm4TlvDq8ikWAM'
       };
       localStorage.setItem('eve-ai-settings', JSON.stringify(s));
       settings.classList.remove('open');
-      updateStatusForKey();
-      statusEl.textContent = s.key ? 'AI ready. Tap mic or type.' : 'No API key — using fallback.';
+      updateStatus();
+      statusEl.textContent = s.key ? (s.ttsKey ? 'AI + neural voice ready.' : 'AI ready (browser voice).') : 'No AI key — fallback.';
     }
     function clearSettings() {
       localStorage.removeItem('eve-ai-settings');
       apiKeyEl.value = '';
-      updateStatusForKey();
-      statusEl.textContent = 'Key cleared.';
+      ttsKeyEl.value = '';
+      updateStatus();
+      statusEl.textContent = 'Keys cleared.';
     }
-    function updateStatusForKey() {
-      const hasKey = !! (JSON.parse(localStorage.getItem('eve-ai-settings') || '{}').key);
-      if (!hasKey) statusEl.textContent = 'Ready (fallback mode). Tap gear to add API key for full AI.';
+    function updateStatus() {
+      const s = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
+      if (!s.key) statusEl.textContent = 'Ready (fallback). Gear for AI + optional neural voice.';
     }
 
     gearBtn.addEventListener('click', () => settings.classList.toggle('open'));
@@ -481,7 +496,7 @@ h1.eve-title {
         listening = false;
         micBtn.classList.remove('listening');
         avatar.classList.remove('listening');
-        if (!speechSynthesis.speaking) updateStatusForKey();
+        if (!speechSynthesis.speaking && !neuralAudio.src) updateStatus();
       };
       recognition.onerror = (e) => {
         listening = false;
@@ -539,12 +554,75 @@ h1.eve-title {
       chat.scrollTop = chat.scrollHeight;
     }
 
-    function speak(text) {
+    function stopAllSpeech() {
+      if (window.speechSynthesis) speechSynthesis.cancel();
+      if (neuralAudio.src) {
+        neuralAudio.pause();
+        neuralAudio.src = '';
+      }
+      avatar.classList.remove('speaking');
+      player.classList.remove('speaking');
+      playBtn.textContent = '▶';
+    }
+
+    async function speakNeural(text, ttsKey, voiceId) {
+      statusEl.textContent = 'Generating voice…';
+      try {
+        const res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(voiceId), {
+          method: 'POST',
+          headers: {
+            'Accept': 'audio/mpeg',
+            'Content-Type': 'application/json',
+            'xi-api-key': ttsKey
+          },
+          body: JSON.stringify({
+            text: text,
+            model_id: 'eleven_monolingual_v1',
+            voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+          })
+        });
+        if (!res.ok) throw new Error(res.status);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        neuralAudio.src = url;
+        neuralAudio.onplay = () => {
+          avatar.classList.add('speaking');
+          player.classList.add('speaking');
+          playBtn.textContent = '⏸';
+          timeEl.textContent = 'speaking…';
+          statusEl.textContent = 'Eve is speaking…';
+        };
+        neuralAudio.onended = () => {
+          avatar.classList.remove('speaking');
+          player.classList.remove('speaking');
+          playBtn.textContent = '▶';
+          timeEl.textContent = '00:00';
+          updateStatus();
+          if (autoRestart && recognition && !listening) {
+            setTimeout(() => {
+              if (!listening && !neuralAudio.src) toggleListen();
+            }, 700);
+          }
+          URL.revokeObjectURL(url);
+        };
+        neuralAudio.onerror = () => {
+          statusEl.textContent = 'Neural voice failed — falling back';
+          speakBrowser(text);
+        };
+        await neuralAudio.play();
+      } catch (e) {
+        console.error(e);
+        statusEl.textContent = 'Neural TTS error — using browser voice';
+        speakBrowser(text);
+      }
+    }
+
+    function speakBrowser(text) {
       if (!window.speechSynthesis) {
-        statusEl.textContent = 'Speech synthesis not supported.';
+        statusEl.textContent = 'No speech available.';
         return;
       }
-      window.speechSynthesis.cancel();
+      speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       const voices = speechSynthesis.getVoices();
       const female = voices.find(v => /female|samantha|victoria|karen|moira|fiona|zira|susan|alex/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
@@ -564,7 +642,7 @@ h1.eve-title {
         player.classList.remove('speaking');
         playBtn.textContent = '▶';
         timeEl.textContent = '00:00';
-        updateStatusForKey();
+        updateStatus();
         if (autoRestart && recognition && !listening) {
           setTimeout(() => {
             if (!listening && !speechSynthesis.speaking) toggleListen();
@@ -581,6 +659,16 @@ h1.eve-title {
       speechSynthesis.speak(utter);
     }
 
+    function speak(text) {
+      stopAllSpeech();
+      const s = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
+      if (s.ttsKey && s.ttsVoice) {
+        speakNeural(text, s.ttsKey, s.ttsVoice);
+      } else {
+        speakBrowser(text);
+      }
+    }
+
     async function getAIReply(userText) {
       const settings = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
       const key = settings.key;
@@ -588,7 +676,6 @@ h1.eve-title {
       const model = settings.model || 'grok-4';
 
       if (!key) {
-        // Fallback
         return 'I heard you. (Add an API key in the gear for full AI replies.) What would you like next?';
       }
 
@@ -604,7 +691,7 @@ h1.eve-title {
           },
           body: JSON.stringify({
             model: model,
-            messages: conversation.slice(-10), // keep context short
+            messages: conversation.slice(-10),
             max_tokens: 180,
             temperature: 0.7
           })
@@ -646,7 +733,7 @@ h1.eve-title {
     }
 
     playBtn.addEventListener('click', () => {
-      if (speechSynthesis.speaking) speechSynthesis.cancel();
+      stopAllSpeech();
     });
 
     let welcomed = false;
