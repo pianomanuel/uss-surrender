@@ -41,17 +41,10 @@ h1 {
   color: var(--muted);
   margin-bottom: 32px;
 }
-.avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #ffe4ec, #ffd6e0);
-  border: 3px solid #1a1a1a;
+.ship-tube {
+  width: 180px;
+  height: 80px;
   margin: 20px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
 }
 .actions {
   display: flex;
@@ -118,13 +111,39 @@ h1 {
   font-size: 12px;
   color: #888;
 }
+.mssql-note {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #aaa;
+}
 </style>
 </head>
 <body>
   <h1>Ani</h1>
   <p class="subtitle">Listen Court · Deck three</p>
 
-  <div class="avatar">👧</div>
+  <!-- Tube graphic as the ship -->
+  <svg class="ship-tube" viewBox="0 0 180 80" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="tubeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#4a6a8a"/>
+        <stop offset="50%" stop-color="#7aa0c0"/>
+        <stop offset="100%" stop-color="#4a6a8a"/>
+      </linearGradient>
+    </defs>
+    <!-- Main tube hull -->
+    <rect x="10" y="25" width="160" height="30" rx="15" fill="url(#tubeGrad)" stroke="#1a1a1a" stroke-width="2"/>
+    <!-- Bridge section -->
+    <rect x="70" y="15" width="40" height="15" rx="4" fill="#3a5a7a" stroke="#1a1a1a" stroke-width="1.5"/>
+    <!-- Engine glow -->
+    <circle cx="25" cy="40" r="6" fill="#88ccff" opacity="0.8"/>
+    <circle cx="155" cy="40" r="6" fill="#88ccff" opacity="0.8"/>
+    <!-- Deck markers -->
+    <line x1="40" y1="25" x2="40" y2="55" stroke="#1a1a1a" stroke-width="1"/>
+    <line x1="90" y1="25" x2="90" y2="55" stroke="#1a1a1a" stroke-width="1"/>
+    <line x1="140" y1="25" x2="140" y2="55" stroke="#1a1a1a" stroke-width="1"/>
+    <text x="90" y="72" text-anchor="middle" font-size="10" fill="#666">USS Surrender</text>
+  </svg>
 
   <div class="actions">
     <button class="btn" id="bookmark">Add bookmark</button>
@@ -146,6 +165,7 @@ h1 {
 
   <div class="status" id="status">Research mode · 30% vol · Warp engines nominal</div>
   <div class="warp-note">Warp engines at nominal. Research only. Runs if aboard from login.</div>
+  <div class="mssql-note">Ship structure built parallel to normal MSSQL (decks, levels, objects).</div>
 
   <audio id="relaxAudio" loop preload="none"></audio>
 
@@ -244,7 +264,6 @@ h1 {
     const saved = localStorage.getItem('ani-email');
     if (saved) {
       status.textContent = 'Aboard: ' + saved.split('@')[0] + ' · 30% vol';
-      // Auto-start if aboard
       setTimeout(async () => {
         const started = await startMusic();
         if (started) status.textContent = 'Aboard. Music running at 30% · Warp nominal';
