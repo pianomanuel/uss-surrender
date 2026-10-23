@@ -8,6 +8,11 @@
   "class": "voice-roster",
   "public": "PG-13",
   "note": "Voice roster and watch only. No script body.",
+  "tts": {
+    "voice": "eve",
+    "source": "existing",
+    "file": "Phoenix_Flare_commish_eve.mp3"
+  },
   "watch": {
     "date": "2026-10-15",
     "aboard": 2,
@@ -21,7 +26,7 @@
     { "id": "brisk", "label": "Brisk", "rate": 1.15 }
   ],
   "voices": [
-    { "id": "eve", "name": "Eve", "note": "Bright, British", "room": "Mind Surrender" },
+    { "id": "eve", "name": "Eve", "note": "Existing TTS", "room": "Mind Surrender", "file": "Phoenix_Flare_commish_eve.mp3" },
     { "id": "ara", "name": "Ara", "note": "Warm and close", "room": "Mind Surrender" },
     { "id": "orion", "name": "Orion", "note": "Cinematic", "room": "Mind Surrender" },
     { "id": "leo", "name": "Leo", "note": "Steady, British", "room": "Mind Surrender" },
