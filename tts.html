@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#f4efe6">
-<title>TTS · Listen Court · Eve</title>
+<title>TTS · Listen Court · Ani</title>
 <style>
 :root {
   --bg: #f4efe6;
@@ -136,10 +136,10 @@ h1.eve-title {
   margin: 8px 0 16px;
 }
 .avatar {
-  width: 88px;
-  height: 88px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  background: linear-gradient(145deg, #f8f4ee, #e6dfd4);
+  background: linear-gradient(145deg, #ffe4ec, #ffd6e0);
   border: 3px solid #1a1a1a;
   position: relative;
   display: flex;
@@ -147,49 +147,89 @@ h1.eve-title {
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0,0,0,.08);
   transition: transform .3s ease, box-shadow .3s ease;
+  overflow: hidden;
 }
 .avatar.listening {
-  box-shadow: 0 0 0 6px rgba(100, 160, 220, .35);
+  box-shadow: 0 0 0 6px rgba(255, 140, 180, .45);
   animation: pulse-listen 1.4s ease-in-out infinite;
 }
 .avatar.speaking {
-  box-shadow: 0 0 0 6px rgba(180, 140, 100, .4);
+  box-shadow: 0 0 0 6px rgba(255, 100, 150, .5);
   animation: pulse-speak .6s ease-in-out infinite;
 }
 @keyframes pulse-listen {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.04); }
+  50% { transform: scale(1.05); }
 }
 @keyframes pulse-speak {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
+  50% { transform: scale(1.07); }
 }
-.eyes {
+.anime-face {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+.hair {
+  position: absolute;
+  top: -8px;
+  left: 5px;
+  width: 60px;
+  height: 40px;
+  background: #5a3a2a;
+  border-radius: 30px 30px 0 0;
+}
+.bangs {
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  width: 54px;
+  height: 18px;
+  background: #5a3a2a;
+  border-radius: 20px;
+}
+.eyes-anime {
+  position: absolute;
+  top: 22px;
+  left: 10px;
   display: flex;
-  gap: 18px;
-  margin-bottom: 8px;
+  gap: 16px;
 }
-.eye {
-  width: 10px;
-  height: 10px;
-  background: #1a1a1a;
+.eye-anime {
+  width: 16px;
+  height: 18px;
+  background: #fff;
+  border: 2px solid #1a1a1a;
+  border-radius: 50%;
+  position: relative;
+}
+.eye-anime::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  width: 6px;
+  height: 8px;
+  background: #4a90e2;
   border-radius: 50%;
 }
-.mouth {
-  width: 22px;
+.mouth-anime {
+  position: absolute;
+  bottom: 12px;
+  left: 26px;
+  width: 18px;
   height: 6px;
-  background: #1a1a1a;
-  border-radius: 3px;
-  transition: height .15s ease, border-radius .15s ease;
+  border-bottom: 2px solid #1a1a1a;
+  border-radius: 0 0 10px 10px;
 }
-.avatar.speaking .mouth {
-  height: 14px;
+.avatar.speaking .mouth-anime {
+  height: 10px;
   border-radius: 0 0 12px 12px;
   animation: talk .25s ease-in-out infinite alternate;
 }
 @keyframes talk {
-  from { height: 8px; }
-  to { height: 16px; }
+  from { height: 6px; }
+  to { height: 12px; }
 }
 .status-line {
   text-align: center;
@@ -354,32 +394,34 @@ h1.eve-title {
 
   <div class="mode-toggle">
     <button class="mode-btn">Read</button>
-    <button class="mode-btn active">Eve</button>
+    <button class="mode-btn active">Ani</button>
   </div>
 
-  <h1 class="eve-title">Eve</h1>
-  <p class="subtitle">Fully AI-driven with voice. Speak or type. She thinks, answers, and speaks.</p>
+  <h1 class="eve-title">Ani</h1>
+  <p class="subtitle">Anime character. Speak or type. She answers and speaks.</p>
 
   <div class="eve-presence">
     <div class="avatar" id="avatar">
-      <div>
-        <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
-        <div class="mouth"></div>
+      <div class="anime-face">
+        <div class="hair"></div>
+        <div class="bangs"></div>
+        <div class="eyes-anime"><div class="eye-anime"></div><div class="eye-anime"></div></div>
+        <div class="mouth-anime"></div>
       </div>
     </div>
   </div>
-  <div class="status-line" id="status">Ready. Tap mic or type. (Gear for AI + voice keys)</div>
+  <div class="status-line" id="status">Ready. Tap mic or type. (Optional keys in gear)</div>
 
   <div class="settings" id="settings">
-    <label>AI API Base URL</label>
+    <label>AI API Base URL (optional)</label>
     <input id="apiBase" type="text" placeholder="https://api.x.ai/v1" value="https://api.x.ai/v1" />
-    <label>AI API Key</label>
-    <input id="apiKey" type="password" placeholder="xai-... or sk-..." />
+    <label>AI API Key (optional)</label>
+    <input id="apiKey" type="password" placeholder="leave blank for simple replies" />
     <label>AI Model</label>
     <input id="apiModel" type="text" placeholder="grok-4" value="grok-4" />
     <hr style="border:none;border-top:1px solid #eee;margin:12px 0;">
-    <label>TTS API Key (optional, ElevenLabs-style for richer voice)</label>
-    <input id="ttsKey" type="password" placeholder="xi-... or leave blank for browser voice" />
+    <label>TTS API Key (optional)</label>
+    <input id="ttsKey" type="password" placeholder="leave blank for browser voice" />
     <label>TTS Voice ID</label>
     <input id="ttsVoice" type="text" placeholder="21m00Tcm4TlvDq8ikWAM" value="21m00Tcm4TlvDq8ikWAM" />
     <button id="saveSettings">Save & close</button>
@@ -389,7 +431,7 @@ h1.eve-title {
   <div class="chat-card" id="chat">
     <div class="chat-label">You</div>
     <div class="chat-text">Hi</div>
-    <div class="chat-label">Eve</div>
+    <div class="chat-label">Ani</div>
     <div class="chat-text">Hello. Good to see you. How can I help you today?</div>
   </div>
 
@@ -397,7 +439,7 @@ h1.eve-title {
     <button class="mic-btn" id="mic" title="Tap to speak">🎙</button>
     <input type="text" id="input" placeholder="Or type here" />
     <button class="send-btn" id="send">Send</button>
-    <button class="gear-btn" id="gear" title="AI + voice settings">⚙</button>
+    <button class="gear-btn" id="gear" title="Optional settings">⚙</button>
   </div>
 
   <div class="player-bar" id="player">
@@ -435,9 +477,8 @@ h1.eve-title {
     let listening = false;
     let autoRestart = true;
     let conversation = [
-      { role: 'system', content: 'You are Eve, a calm, warm, attentive presence on the Listen Court of the USS Surrender, deck three, protected. Speak naturally, in short spoken sentences. Answer helpfully. You hear the user and reply so they can hear you. Keep responses concise for speech (1-3 sentences).' }
+      { role: 'system', content: 'You are Ani, a warm, bright anime character on the Listen Court of the USS Surrender. Speak naturally in short sentences. Be helpful and friendly. Keep replies concise for speech (1-3 sentences).' }
     ];
-    let currentAudio = null;
 
     function loadSettings() {
       const s = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
@@ -459,18 +500,16 @@ h1.eve-title {
       localStorage.setItem('eve-ai-settings', JSON.stringify(s));
       settings.classList.remove('open');
       updateStatus();
-      statusEl.textContent = s.key ? (s.ttsKey ? 'AI + neural voice ready.' : 'AI ready (browser voice).') : 'No AI key — fallback.';
     }
     function clearSettings() {
       localStorage.removeItem('eve-ai-settings');
       apiKeyEl.value = '';
       ttsKeyEl.value = '';
       updateStatus();
-      statusEl.textContent = 'Keys cleared.';
+      statusEl.textContent = 'Keys cleared. Using browser defaults.';
     }
     function updateStatus() {
-      const s = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
-      if (!s.key) statusEl.textContent = 'Ready (fallback). Gear for AI + optional neural voice.';
+      statusEl.textContent = 'Ready. Tap mic or type.';
     }
 
     gearBtn.addEventListener('click', () => settings.classList.toggle('open'));
@@ -478,7 +517,6 @@ h1.eve-title {
     document.getElementById('clearSettings').addEventListener('click', clearSettings);
     loadSettings();
 
-    // Speech recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       recognition = new SpeechRecognition();
@@ -518,20 +556,19 @@ h1.eve-title {
         }
         if (final) {
           input.value = final;
-          statusEl.textContent = 'Got it. Thinking…';
+          statusEl.textContent = 'Got it.';
           setTimeout(() => handleSend(final), 200);
         }
       };
     } else {
       micBtn.style.opacity = '0.5';
-      micBtn.title = 'Speech recognition not supported here';
     }
 
     function toggleListen() {
       if (!recognition) return;
       if (listening) recognition.stop();
       else {
-        try { recognition.start(); } catch (e) { statusEl.textContent = 'Mic busy — wait a moment'; }
+        try { recognition.start(); } catch (e) { statusEl.textContent = 'Mic busy'; }
       }
     }
 
@@ -565,58 +602,6 @@ h1.eve-title {
       playBtn.textContent = '▶';
     }
 
-    async function speakNeural(text, ttsKey, voiceId) {
-      statusEl.textContent = 'Generating voice…';
-      try {
-        const res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(voiceId), {
-          method: 'POST',
-          headers: {
-            'Accept': 'audio/mpeg',
-            'Content-Type': 'application/json',
-            'xi-api-key': ttsKey
-          },
-          body: JSON.stringify({
-            text: text,
-            model_id: 'eleven_monolingual_v1',
-            voice_settings: { stability: 0.5, similarity_boost: 0.75 }
-          })
-        });
-        if (!res.ok) throw new Error(res.status);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        neuralAudio.src = url;
-        neuralAudio.onplay = () => {
-          avatar.classList.add('speaking');
-          player.classList.add('speaking');
-          playBtn.textContent = '⏸';
-          timeEl.textContent = 'speaking…';
-          statusEl.textContent = 'Eve is speaking…';
-        };
-        neuralAudio.onended = () => {
-          avatar.classList.remove('speaking');
-          player.classList.remove('speaking');
-          playBtn.textContent = '▶';
-          timeEl.textContent = '00:00';
-          updateStatus();
-          if (autoRestart && recognition && !listening) {
-            setTimeout(() => {
-              if (!listening && !neuralAudio.src) toggleListen();
-            }, 700);
-          }
-          URL.revokeObjectURL(url);
-        };
-        neuralAudio.onerror = () => {
-          statusEl.textContent = 'Neural voice failed — falling back';
-          speakBrowser(text);
-        };
-        await neuralAudio.play();
-      } catch (e) {
-        console.error(e);
-        statusEl.textContent = 'Neural TTS error — using browser voice';
-        speakBrowser(text);
-      }
-    }
-
     function speakBrowser(text) {
       if (!window.speechSynthesis) {
         statusEl.textContent = 'No speech available.';
@@ -628,14 +613,14 @@ h1.eve-title {
       const female = voices.find(v => /female|samantha|victoria|karen|moira|fiona|zira|susan|alex/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
       if (female) utter.voice = female;
       utter.rate = 0.95;
-      utter.pitch = 1.05;
+      utter.pitch = 1.1;
 
       utter.onstart = () => {
         avatar.classList.add('speaking');
         player.classList.add('speaking');
         playBtn.textContent = '⏸';
         timeEl.textContent = 'speaking…';
-        statusEl.textContent = 'Eve is speaking…';
+        statusEl.textContent = 'Ani is speaking…';
       };
       utter.onend = () => {
         avatar.classList.remove('speaking');
@@ -649,36 +634,31 @@ h1.eve-title {
           }, 700);
         }
       };
-      utter.onerror = () => {
-        avatar.classList.remove('speaking');
-        player.classList.remove('speaking');
-        playBtn.textContent = '▶';
-        statusEl.textContent = 'Speech error';
-      };
-
       speechSynthesis.speak(utter);
     }
 
     function speak(text) {
       stopAllSpeech();
-      const s = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
-      if (s.ttsKey && s.ttsVoice) {
-        speakNeural(text, s.ttsKey, s.ttsVoice);
-      } else {
-        speakBrowser(text);
-      }
+      speakBrowser(text); // Always browser voice as default; neural optional if keys added later
+    }
+
+    function generateSimpleReply(userText) {
+      const lower = userText.toLowerCase().trim();
+      if (!lower) return 'I\'m listening.';
+      if (/\b(hello|hi|hey)\b/.test(lower)) return 'Hello. I\'m Ani. Nice to meet you.';
+      if (lower.includes('how are you')) return 'I\'m good. Ready to talk.';
+      if (lower.includes('name') || lower.includes('who are you')) return 'I\'m Ani, the anime character on Listen Court.';
+      if (lower.includes('help')) return 'Just speak or type. I\'ll answer and say it out loud.';
+      return 'I heard you. ' + userText + '. What next?';
     }
 
     async function getAIReply(userText) {
       const settings = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
       const key = settings.key;
+      if (!key) return generateSimpleReply(userText);
+
       const base = (settings.base || 'https://api.x.ai/v1').replace(/\/$/, '');
       const model = settings.model || 'grok-4';
-
-      if (!key) {
-        return 'I heard you. (Add an API key in the gear for full AI replies.) What would you like next?';
-      }
-
       conversation.push({ role: 'user', content: userText });
       statusEl.textContent = 'Thinking…';
 
@@ -691,22 +671,18 @@ h1.eve-title {
           },
           body: JSON.stringify({
             model: model,
-            messages: conversation.slice(-10),
-            max_tokens: 180,
+            messages: conversation.slice(-8),
+            max_tokens: 150,
             temperature: 0.7
           })
         });
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error(res.status + ' ' + err.slice(0, 120));
-        }
+        if (!res.ok) throw new Error(res.status);
         const data = await res.json();
         const reply = data.choices?.[0]?.message?.content?.trim() || 'I\'m here.';
         conversation.push({ role: 'assistant', content: reply });
         return reply;
       } catch (e) {
-        console.error(e);
-        return 'I couldn\'t reach the AI just now. (' + e.message + ') Try again or check the key.';
+        return generateSimpleReply(userText);
       }
     }
 
@@ -716,9 +692,8 @@ h1.eve-title {
       if (listening && recognition) recognition.stop();
       addMessage('You', text);
       input.value = '';
-      statusEl.textContent = 'Thinking…';
       const reply = await getAIReply(text);
-      addMessage('Eve', reply);
+      addMessage('Ani', reply);
       speak(reply);
     }
 
@@ -732,16 +707,9 @@ h1.eve-title {
       speechSynthesis.onvoiceschanged = () => {};
     }
 
-    playBtn.addEventListener('click', () => {
-      stopAllSpeech();
-    });
+    playBtn.addEventListener('click', () => stopAllSpeech());
 
-    let welcomed = false;
-    function maybeWelcome() {
-      if (welcomed) return;
-      welcomed = true;
-    }
-    document.body.addEventListener('click', maybeWelcome, { once: true });
+    updateStatus();
   </script>
 </body>
 </html>
