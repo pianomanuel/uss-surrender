@@ -136,6 +136,8 @@ h1.eve-title {
   margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,.05);
   min-height: 180px;
+  max-height: 280px;
+  overflow-y: auto;
 }
 .chat-label {
   font-size: 13px;
@@ -172,6 +174,7 @@ h1.eve-title {
   font-weight: 500;
   cursor: pointer;
 }
+.send-btn:active { background: #888; }
 .player-bar {
   background: #6b6b6b;
   color: white;
@@ -205,6 +208,7 @@ h1.eve-title {
   top: -4px;
   left: 30%;
 }
+.speaking { opacity: 0.7; }
 </style>
 </head>
 <body>
@@ -249,7 +253,7 @@ h1.eve-title {
   <h1 class="eve-title">Eve</h1>
   <p class="subtitle">Ask her something. She answers, then speaks.</p>
 
-  <div class="chat-card">
+  <div class="chat-card" id="chat">
     <div class="chat-label">You</div>
     <div class="chat-text">Hi</div>
     <div class="chat-label">Eve</div>
@@ -257,14 +261,14 @@ h1.eve-title {
   </div>
 
   <div class="input-row">
-    <input type="text" placeholder="Say something" />
-    <button class="send-btn">Send</button>
+    <input type="text" id="input" placeholder="Say something" />
+    <button class="send-btn" id="send">Send</button>
   </div>
 
-  <div class="player-bar">
-    <button>▶</button>
-    <span>00:04</span>
-    <div class="progress"><div class="progress-dot"></div></div>
+  <div class="player-bar" id="player">
+    <button id="playBtn">▶</button>
+    <span id="time">00:00</span>
+    <div class="progress"><div class="progress-dot" id="dot"></div></div>
     <span>00:00</span>
     <button>🔊</button>
     <button>🖥️</button>
@@ -272,18 +276,98 @@ h1.eve-title {
   </div>
 
   <script>
-    // Minimal interactivity for demo
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+    const player = document.getElementById('player');
+    const timeEl = document.getElementById('time');
+    const playBtn = document.getElementById('playBtn');
+
+    // Mode toggle
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
       });
     });
-    document.querySelector('.send-btn').addEventListener('click', () => {
-      const input = document.querySelector('input');
-      if (input.value.trim()) {
-        alert('TTS would speak: ' + input.value);
-        input.value = '';
+
+    function addMessage(label, text) {
+      const labelEl = document.createElement('div');
+      labelEl.className = 'chat-label';
+      labelEl.textContent = label;
+      const textEl = document.createElement('div');
+      textEl.className = 'chat-text';
+      textEl.textContent = text;
+      chat.appendChild(labelEl);
+      chat.appendChild(textEl);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function speak(text) {
+      if (!window.speechSynthesis) {
+        alert('Speech synthesis not supported in this browser.');
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      // Prefer a female / soft voice if available
+      const voices = speechSynthesis.getVoices();
+      const female = voices.find(v => /female|samantha|victoria|karen|moira|fiona|zira|susan/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
+      if (female) utter.voice = female;
+      utter.rate = 0.95;
+      utter.pitch = 1.05;
+
+      utter.onstart = () => {
+        player.classList.add('speaking');
+        playBtn.textContent = '⏸';
+        timeEl.textContent = 'speaking…';
+      };
+      utter.onend = () => {
+        player.classList.remove('speaking');
+        playBtn.textContent = '▶';
+        timeEl.textContent = '00:00';
+      };
+      utter.onerror = () => {
+        player.classList.remove('speaking');
+        playBtn.textContent = '▶';
+      };
+
+      speechSynthesis.speak(utter);
+    }
+
+    function generateEveReply(userText) {
+      const lower = userText.toLowerCase();
+      if (lower.includes('hello') || lower.includes('hi')) return 'Hello again. I\'m here.';
+      if (lower.includes('how are you')) return 'I\'m steady. Ready when you are.';
+      if (lower.includes('name')) return 'I\'m Eve. On Listen Court, deck three.';
+      if (lower.includes('help')) return 'Tell me what you need. I\'ll answer, then speak it.';
+      return 'I heard you. ' + userText + '. What would you like next?';
+    }
+
+    function handleSend() {
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage('You', text);
+      input.value = '';
+      const reply = generateEveReply(text);
+      addMessage('Eve', reply);
+      speak(reply);
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSend();
+    });
+
+    // Load voices (some browsers need this)
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = () => {};
+    }
+
+    // Play button stops current speech
+    playBtn.addEventListener('click', () => {
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
       }
     });
   </script>
