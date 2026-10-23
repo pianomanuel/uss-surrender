@@ -131,14 +131,10 @@ h1 {
         <stop offset="100%" stop-color="#4a6a8a"/>
       </linearGradient>
     </defs>
-    <!-- Main tube hull -->
     <rect x="10" y="25" width="160" height="30" rx="15" fill="url(#tubeGrad)" stroke="#1a1a1a" stroke-width="2"/>
-    <!-- Bridge section -->
     <rect x="70" y="15" width="40" height="15" rx="4" fill="#3a5a7a" stroke="#1a1a1a" stroke-width="1.5"/>
-    <!-- Engine glow -->
     <circle cx="25" cy="40" r="6" fill="#88ccff" opacity="0.8"/>
     <circle cx="155" cy="40" r="6" fill="#88ccff" opacity="0.8"/>
-    <!-- Deck markers -->
     <line x1="40" y1="25" x2="40" y2="55" stroke="#1a1a1a" stroke-width="1"/>
     <line x1="90" y1="25" x2="90" y2="55" stroke="#1a1a1a" stroke-width="1"/>
     <line x1="140" y1="25" x2="140" y2="55" stroke="#1a1a1a" stroke-width="1"/>
@@ -163,8 +159,8 @@ h1 {
     <button class="btn" id="submitLogin">Continue</button>
   </div>
 
-  <div class="status" id="status">Research mode · 30% vol · Warp engines nominal</div>
-  <div class="warp-note">Warp engines at nominal. Research only. Runs if aboard from login.</div>
+  <div class="status" id="status">High volume · Warp engines nominal</div>
+  <div class="warp-note">Warp engines at nominal. Music high. Runs if aboard from login.</div>
   <div class="mssql-note">Ship structure built parallel to normal MSSQL (decks, levels, objects).</div>
 
   <audio id="relaxAudio" loop preload="none"></audio>
@@ -181,12 +177,12 @@ h1 {
     const relaxAudio = document.getElementById('relaxAudio');
     let musicPlaying = false;
 
-    // Research mode: 30% volume
-    relaxAudio.volume = 0.3;
+    // High volume now
+    relaxAudio.volume = 1.0;
 
     function setTrack(url) {
       relaxAudio.src = url;
-      relaxAudio.volume = 0.3;
+      relaxAudio.volume = 1.0;
       if (musicPlaying) {
         relaxAudio.play().catch(() => {});
       }
@@ -207,7 +203,7 @@ h1 {
 
     musicSelect.addEventListener('change', () => {
       setTrack(musicSelect.value);
-      status.textContent = 'Track selected · 30% vol';
+      status.textContent = 'Track selected · high volume';
     });
 
     bookmarkBtn.addEventListener('click', () => {
@@ -241,7 +237,7 @@ h1 {
       loginPrompt.style.display = 'none';
 
       const started = await startMusic();
-      status.textContent = started ? 'Welcome. Music at 30% · Warp nominal' : 'Welcome. Tap music button to start.';
+      status.textContent = started ? 'Welcome. Music high · Warp nominal' : 'Welcome. Tap music button to start.';
     });
 
     musicBtn.addEventListener('click', async () => {
@@ -250,10 +246,10 @@ h1 {
         musicPlaying = false;
         musicBtn.classList.remove('playing');
         musicBtn.textContent = 'Relaxing music';
-        status.textContent = 'Music paused · 30% vol';
+        status.textContent = 'Music paused · high volume';
       } else {
         const started = await startMusic();
-        status.textContent = started ? 'Music playing at 30% · Warp nominal' : 'Tap again to allow audio';
+        status.textContent = started ? 'Music playing high · Warp nominal' : 'Tap again to allow audio';
       }
     });
 
@@ -263,10 +259,10 @@ h1 {
     // If already aboard (logged in), auto-start music
     const saved = localStorage.getItem('ani-email');
     if (saved) {
-      status.textContent = 'Aboard: ' + saved.split('@')[0] + ' · 30% vol';
+      status.textContent = 'Aboard: ' + saved.split('@')[0] + ' · high volume';
       setTimeout(async () => {
         const started = await startMusic();
-        if (started) status.textContent = 'Aboard. Music running at 30% · Warp nominal';
+        if (started) status.textContent = 'Aboard. Music high · Warp nominal';
       }, 500);
     }
   </script>
