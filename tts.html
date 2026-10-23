@@ -130,7 +130,6 @@ h1.eve-title {
   margin: 0 0 24px;
 }
 
-/* Visual presence */
 .eve-presence {
   display: flex;
   justify-content: center;
@@ -235,7 +234,7 @@ h1.eve-title {
   font-size: 16px;
   outline: none;
 }
-.mic-btn, .send-btn {
+.mic-btn, .send-btn, .gear-btn {
   background: #1a1a1a;
   color: white;
   border: none;
@@ -253,7 +252,8 @@ h1.eve-title {
 .send-btn {
   background: #a0a0a0;
 }
-.send-btn:active, .mic-btn:active { transform: scale(.96); }
+.gear-btn { background: #6b6b6b; }
+.send-btn:active, .mic-btn:active, .gear-btn:active { transform: scale(.96); }
 .player-bar {
   background: #6b6b6b;
   color: white;
@@ -288,6 +288,34 @@ h1.eve-title {
   left: 30%;
 }
 .speaking { opacity: 0.7; }
+
+.settings {
+  display: none;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.settings.open { display: block; }
+.settings label { display: block; font-size: 13px; color: var(--muted); margin: 8px 0 4px; }
+.settings input, .settings select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.settings button {
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-top: 8px;
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -330,7 +358,7 @@ h1.eve-title {
   </div>
 
   <h1 class="eve-title">Eve</h1>
-  <p class="subtitle">Two-way. Speak or type. She answers and speaks back.</p>
+  <p class="subtitle">Fully AI-driven. Speak or type. She thinks, answers, and speaks.</p>
 
   <div class="eve-presence">
     <div class="avatar" id="avatar">
@@ -340,7 +368,18 @@ h1.eve-title {
       </div>
     </div>
   </div>
-  <div class="status-line" id="status">Ready. Tap mic or type.</div>
+  <div class="status-line" id="status">Ready. Tap mic or type. (Set API key in gear for AI)</div>
+
+  <div class="settings" id="settings">
+    <label>API Base URL (OpenAI-compatible)</label>
+    <input id="apiBase" type="text" placeholder="https://api.x.ai/v1" value="https://api.x.ai/v1" />
+    <label>API Key (stored only in this browser)</label>
+    <input id="apiKey" type="password" placeholder="sk-... or xai-..." />
+    <label>Model</label>
+    <input id="apiModel" type="text" placeholder="grok-4" value="grok-4" />
+    <button id="saveSettings">Save & close</button>
+    <button id="clearSettings" style="background:#a00;margin-left:8px;">Clear key</button>
+  </div>
 
   <div class="chat-card" id="chat">
     <div class="chat-label">You</div>
@@ -350,9 +389,10 @@ h1.eve-title {
   </div>
 
   <div class="input-row">
-    <button class="mic-btn" id="mic" title="Hold or tap to speak">🎙</button>
+    <button class="mic-btn" id="mic" title="Tap to speak">🎙</button>
     <input type="text" id="input" placeholder="Or type here" />
     <button class="send-btn" id="send">Send</button>
+    <button class="gear-btn" id="gear" title="AI settings">⚙</button>
   </div>
 
   <div class="player-bar" id="player">
@@ -370,17 +410,60 @@ h1.eve-title {
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('send');
     const micBtn = document.getElementById('mic');
+    const gearBtn = document.getElementById('gear');
     const avatar = document.getElementById('avatar');
     const statusEl = document.getElementById('status');
     const player = document.getElementById('player');
     const timeEl = document.getElementById('time');
     const playBtn = document.getElementById('playBtn');
+    const settings = document.getElementById('settings');
+    const apiBaseEl = document.getElementById('apiBase');
+    const apiKeyEl = document.getElementById('apiKey');
+    const apiModelEl = document.getElementById('apiModel');
 
     let recognition = null;
     let listening = false;
     let autoRestart = true;
+    let conversation = [
+      { role: 'system', content: 'You are Eve, a calm, warm, attentive presence on the Listen Court of the USS Surrender, deck three, protected. Speak naturally, in short spoken sentences. Answer helpfully. You hear the user and reply so they can hear you. Keep responses concise for speech (1-3 sentences).' }
+    ];
 
-    // Speech recognition setup
+    // Load settings
+    function loadSettings() {
+      const s = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
+      if (s.base) apiBaseEl.value = s.base;
+      if (s.key) apiKeyEl.value = s.key;
+      if (s.model) apiModelEl.value = s.model;
+      updateStatusForKey();
+    }
+    function saveSettings() {
+      const s = {
+        base: apiBaseEl.value.trim() || 'https://api.x.ai/v1',
+        key: apiKeyEl.value.trim(),
+        model: apiModelEl.value.trim() || 'grok-4'
+      };
+      localStorage.setItem('eve-ai-settings', JSON.stringify(s));
+      settings.classList.remove('open');
+      updateStatusForKey();
+      statusEl.textContent = s.key ? 'AI ready. Tap mic or type.' : 'No API key — using fallback.';
+    }
+    function clearSettings() {
+      localStorage.removeItem('eve-ai-settings');
+      apiKeyEl.value = '';
+      updateStatusForKey();
+      statusEl.textContent = 'Key cleared.';
+    }
+    function updateStatusForKey() {
+      const hasKey = !! (JSON.parse(localStorage.getItem('eve-ai-settings') || '{}').key);
+      if (!hasKey) statusEl.textContent = 'Ready (fallback mode). Tap gear to add API key for full AI.';
+    }
+
+    gearBtn.addEventListener('click', () => settings.classList.toggle('open'));
+    document.getElementById('saveSettings').addEventListener('click', saveSettings);
+    document.getElementById('clearSettings').addEventListener('click', clearSettings);
+    loadSettings();
+
+    // Speech recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       recognition = new SpeechRecognition();
@@ -398,7 +481,7 @@ h1.eve-title {
         listening = false;
         micBtn.classList.remove('listening');
         avatar.classList.remove('listening');
-        if (!speechSynthesis.speaking) statusEl.textContent = 'Ready. Tap mic or type.';
+        if (!speechSynthesis.speaking) updateStatusForKey();
       };
       recognition.onerror = (e) => {
         listening = false;
@@ -420,30 +503,23 @@ h1.eve-title {
         }
         if (final) {
           input.value = final;
-          statusEl.textContent = 'Got it.';
+          statusEl.textContent = 'Got it. Thinking…';
           setTimeout(() => handleSend(final), 200);
         }
       };
     } else {
       micBtn.style.opacity = '0.5';
       micBtn.title = 'Speech recognition not supported here';
-      statusEl.textContent = 'Voice input limited in this browser. Type instead.';
     }
 
     function toggleListen() {
       if (!recognition) return;
-      if (listening) {
-        recognition.stop();
-      } else {
-        try {
-          recognition.start();
-        } catch (e) {
-          statusEl.textContent = 'Mic busy — wait a moment';
-        }
+      if (listening) recognition.stop();
+      else {
+        try { recognition.start(); } catch (e) { statusEl.textContent = 'Mic busy — wait a moment'; }
       }
     }
 
-    // Mode toggle
     document.querySelectorAll('.mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -488,12 +564,11 @@ h1.eve-title {
         player.classList.remove('speaking');
         playBtn.textContent = '▶';
         timeEl.textContent = '00:00';
-        statusEl.textContent = 'Ready. Tap mic or type.';
-        // Auto-restart listening after she finishes (default two-way)
+        updateStatusForKey();
         if (autoRestart && recognition && !listening) {
           setTimeout(() => {
             if (!listening && !speechSynthesis.speaking) toggleListen();
-          }, 600);
+          }, 700);
         }
       };
       utter.onerror = () => {
@@ -506,32 +581,56 @@ h1.eve-title {
       speechSynthesis.speak(utter);
     }
 
-    function generateEveReply(userText) {
-      const lower = userText.toLowerCase().trim();
-      if (!lower) return 'I\'m listening.';
-      if (/\b(hello|hi|hey)\b/.test(lower)) return 'Hello. I\'m here with you on Listen Court.';
-      if (lower.includes('how are you')) return 'Steady and clear. Ready for whatever you need.';
-      if (lower.includes('your name') || lower.includes('who are you')) return 'I\'m Eve. On deck three, protected.';
-      if (lower.includes('help') || lower.includes('what can you')) return 'Speak or type. I answer, then I speak it back so you can hear it.';
-      if (lower.includes('thank')) return 'You\'re welcome. I\'m still here.';
-      if (lower.includes('stop') || lower.includes('quiet')) {
-        autoRestart = false;
-        return 'All right. I\'ll wait until you call me again.';
+    async function getAIReply(userText) {
+      const settings = JSON.parse(localStorage.getItem('eve-ai-settings') || '{}');
+      const key = settings.key;
+      const base = (settings.base || 'https://api.x.ai/v1').replace(/\/$/, '');
+      const model = settings.model || 'grok-4';
+
+      if (!key) {
+        // Fallback
+        return 'I heard you. (Add an API key in the gear for full AI replies.) What would you like next?';
       }
-      if (lower.includes('start') || lower.includes('listen')) {
-        autoRestart = true;
-        return 'Listening again. Go ahead.';
+
+      conversation.push({ role: 'user', content: userText });
+      statusEl.textContent = 'Thinking…';
+
+      try {
+        const res = await fetch(base + '/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + key
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: conversation.slice(-10), // keep context short
+            max_tokens: 180,
+            temperature: 0.7
+          })
+        });
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(res.status + ' ' + err.slice(0, 120));
+        }
+        const data = await res.json();
+        const reply = data.choices?.[0]?.message?.content?.trim() || 'I\'m here.';
+        conversation.push({ role: 'assistant', content: reply });
+        return reply;
+      } catch (e) {
+        console.error(e);
+        return 'I couldn\'t reach the AI just now. (' + e.message + ') Try again or check the key.';
       }
-      return 'I heard you say: ' + userText + '. What would you like next?';
     }
 
-    function handleSend(forcedText) {
+    async function handleSend(forcedText) {
       const text = (forcedText || input.value).trim();
       if (!text) return;
       if (listening && recognition) recognition.stop();
       addMessage('You', text);
       input.value = '';
-      const reply = generateEveReply(text);
+      statusEl.textContent = 'Thinking…';
+      const reply = await getAIReply(text);
       addMessage('Eve', reply);
       speak(reply);
     }
@@ -542,7 +641,6 @@ h1.eve-title {
     });
     micBtn.addEventListener('click', toggleListen);
 
-    // Load voices
     if (speechSynthesis.onvoiceschanged !== undefined) {
       speechSynthesis.onvoiceschanged = () => {};
     }
@@ -551,12 +649,10 @@ h1.eve-title {
       if (speechSynthesis.speaking) speechSynthesis.cancel();
     });
 
-    // Soft welcome on first interaction (mobile audio unlock)
     let welcomed = false;
     function maybeWelcome() {
       if (welcomed) return;
       welcomed = true;
-      statusEl.textContent = 'Two-way ready. Tap the mic to begin.';
     }
     document.body.addEventListener('click', maybeWelcome, { once: true });
   </script>
