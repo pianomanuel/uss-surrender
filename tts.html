@@ -129,14 +129,85 @@ h1.eve-title {
   font-size: 15px;
   margin: 0 0 24px;
 }
+
+/* Visual presence */
+.eve-presence {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0 16px;
+}
+.avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #f8f4ee, #e6dfd4);
+  border: 3px solid #1a1a1a;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.avatar.listening {
+  box-shadow: 0 0 0 6px rgba(100, 160, 220, .35);
+  animation: pulse-listen 1.4s ease-in-out infinite;
+}
+.avatar.speaking {
+  box-shadow: 0 0 0 6px rgba(180, 140, 100, .4);
+  animation: pulse-speak .6s ease-in-out infinite;
+}
+@keyframes pulse-listen {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+@keyframes pulse-speak {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+.eyes {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 8px;
+}
+.eye {
+  width: 10px;
+  height: 10px;
+  background: #1a1a1a;
+  border-radius: 50%;
+}
+.mouth {
+  width: 22px;
+  height: 6px;
+  background: #1a1a1a;
+  border-radius: 3px;
+  transition: height .15s ease, border-radius .15s ease;
+}
+.avatar.speaking .mouth {
+  height: 14px;
+  border-radius: 0 0 12px 12px;
+  animation: talk .25s ease-in-out infinite alternate;
+}
+@keyframes talk {
+  from { height: 8px; }
+  to { height: 16px; }
+}
+.status-line {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  min-height: 1.2em;
+  margin-bottom: 12px;
+}
+
 .chat-card {
   background: var(--card);
   border-radius: 20px;
   padding: 20px 18px;
   margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,.05);
-  min-height: 180px;
-  max-height: 280px;
+  min-height: 160px;
+  max-height: 240px;
   overflow-y: auto;
 }
 .chat-label {
@@ -164,17 +235,25 @@ h1.eve-title {
   font-size: 16px;
   outline: none;
 }
-.send-btn {
-  background: #a0a0a0;
+.mic-btn, .send-btn {
+  background: #1a1a1a;
   color: white;
   border: none;
   border-radius: 14px;
-  padding: 12px 18px;
+  padding: 12px 16px;
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
+  min-width: 52px;
 }
-.send-btn:active { background: #888; }
+.mic-btn.listening {
+  background: #3a6ea5;
+  animation: pulse-listen 1.2s infinite;
+}
+.send-btn {
+  background: #a0a0a0;
+}
+.send-btn:active, .mic-btn:active { transform: scale(.96); }
 .player-bar {
   background: #6b6b6b;
   color: white;
@@ -251,7 +330,17 @@ h1.eve-title {
   </div>
 
   <h1 class="eve-title">Eve</h1>
-  <p class="subtitle">Ask her something. She answers, then speaks.</p>
+  <p class="subtitle">Two-way. Speak or type. She answers and speaks back.</p>
+
+  <div class="eve-presence">
+    <div class="avatar" id="avatar">
+      <div>
+        <div class="eyes"><div class="eye"></div><div class="eye"></div></div>
+        <div class="mouth"></div>
+      </div>
+    </div>
+  </div>
+  <div class="status-line" id="status">Ready. Tap mic or type.</div>
 
   <div class="chat-card" id="chat">
     <div class="chat-label">You</div>
@@ -261,7 +350,8 @@ h1.eve-title {
   </div>
 
   <div class="input-row">
-    <input type="text" id="input" placeholder="Say something" />
+    <button class="mic-btn" id="mic" title="Hold or tap to speak">🎙</button>
+    <input type="text" id="input" placeholder="Or type here" />
     <button class="send-btn" id="send">Send</button>
   </div>
 
@@ -279,9 +369,79 @@ h1.eve-title {
     const chat = document.getElementById('chat');
     const input = document.getElementById('input');
     const sendBtn = document.getElementById('send');
+    const micBtn = document.getElementById('mic');
+    const avatar = document.getElementById('avatar');
+    const statusEl = document.getElementById('status');
     const player = document.getElementById('player');
     const timeEl = document.getElementById('time');
     const playBtn = document.getElementById('playBtn');
+
+    let recognition = null;
+    let listening = false;
+    let autoRestart = true;
+
+    // Speech recognition setup
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        listening = true;
+        micBtn.classList.add('listening');
+        avatar.classList.add('listening');
+        statusEl.textContent = 'Listening…';
+      };
+      recognition.onend = () => {
+        listening = false;
+        micBtn.classList.remove('listening');
+        avatar.classList.remove('listening');
+        if (!speechSynthesis.speaking) statusEl.textContent = 'Ready. Tap mic or type.';
+      };
+      recognition.onerror = (e) => {
+        listening = false;
+        micBtn.classList.remove('listening');
+        avatar.classList.remove('listening');
+        statusEl.textContent = e.error === 'not-allowed' ? 'Mic permission denied' : 'Mic error — try again';
+      };
+      recognition.onresult = (event) => {
+        let final = '';
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) final += transcript;
+          else interim += transcript;
+        }
+        if (interim) {
+          input.value = interim;
+          statusEl.textContent = 'Hearing: ' + interim;
+        }
+        if (final) {
+          input.value = final;
+          statusEl.textContent = 'Got it.';
+          setTimeout(() => handleSend(final), 200);
+        }
+      };
+    } else {
+      micBtn.style.opacity = '0.5';
+      micBtn.title = 'Speech recognition not supported here';
+      statusEl.textContent = 'Voice input limited in this browser. Type instead.';
+    }
+
+    function toggleListen() {
+      if (!recognition) return;
+      if (listening) {
+        recognition.stop();
+      } else {
+        try {
+          recognition.start();
+        } catch (e) {
+          statusEl.textContent = 'Mic busy — wait a moment';
+        }
+      }
+    }
 
     // Mode toggle
     document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -305,48 +465,70 @@ h1.eve-title {
 
     function speak(text) {
       if (!window.speechSynthesis) {
-        alert('Speech synthesis not supported in this browser.');
+        statusEl.textContent = 'Speech synthesis not supported.';
         return;
       }
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
-      // Prefer a female / soft voice if available
       const voices = speechSynthesis.getVoices();
-      const female = voices.find(v => /female|samantha|victoria|karen|moira|fiona|zira|susan/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
+      const female = voices.find(v => /female|samantha|victoria|karen|moira|fiona|zira|susan|alex/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
       if (female) utter.voice = female;
       utter.rate = 0.95;
       utter.pitch = 1.05;
 
       utter.onstart = () => {
+        avatar.classList.add('speaking');
         player.classList.add('speaking');
         playBtn.textContent = '⏸';
         timeEl.textContent = 'speaking…';
+        statusEl.textContent = 'Eve is speaking…';
       };
       utter.onend = () => {
+        avatar.classList.remove('speaking');
         player.classList.remove('speaking');
         playBtn.textContent = '▶';
         timeEl.textContent = '00:00';
+        statusEl.textContent = 'Ready. Tap mic or type.';
+        // Auto-restart listening after she finishes (default two-way)
+        if (autoRestart && recognition && !listening) {
+          setTimeout(() => {
+            if (!listening && !speechSynthesis.speaking) toggleListen();
+          }, 600);
+        }
       };
       utter.onerror = () => {
+        avatar.classList.remove('speaking');
         player.classList.remove('speaking');
         playBtn.textContent = '▶';
+        statusEl.textContent = 'Speech error';
       };
 
       speechSynthesis.speak(utter);
     }
 
     function generateEveReply(userText) {
-      const lower = userText.toLowerCase();
-      if (lower.includes('hello') || lower.includes('hi')) return 'Hello again. I\'m here.';
-      if (lower.includes('how are you')) return 'I\'m steady. Ready when you are.';
-      if (lower.includes('name')) return 'I\'m Eve. On Listen Court, deck three.';
-      if (lower.includes('help')) return 'Tell me what you need. I\'ll answer, then speak it.';
-      return 'I heard you. ' + userText + '. What would you like next?';
+      const lower = userText.toLowerCase().trim();
+      if (!lower) return 'I\'m listening.';
+      if (/\b(hello|hi|hey)\b/.test(lower)) return 'Hello. I\'m here with you on Listen Court.';
+      if (lower.includes('how are you')) return 'Steady and clear. Ready for whatever you need.';
+      if (lower.includes('your name') || lower.includes('who are you')) return 'I\'m Eve. On deck three, protected.';
+      if (lower.includes('help') || lower.includes('what can you')) return 'Speak or type. I answer, then I speak it back so you can hear it.';
+      if (lower.includes('thank')) return 'You\'re welcome. I\'m still here.';
+      if (lower.includes('stop') || lower.includes('quiet')) {
+        autoRestart = false;
+        return 'All right. I\'ll wait until you call me again.';
+      }
+      if (lower.includes('start') || lower.includes('listen')) {
+        autoRestart = true;
+        return 'Listening again. Go ahead.';
+      }
+      return 'I heard you say: ' + userText + '. What would you like next?';
     }
 
-    function handleSend() {
-      const text = input.value.trim();
+    function handleSend(forcedText) {
+      const text = (forcedText || input.value).trim();
       if (!text) return;
+      if (listening && recognition) recognition.stop();
       addMessage('You', text);
       input.value = '';
       const reply = generateEveReply(text);
@@ -354,22 +536,29 @@ h1.eve-title {
       speak(reply);
     }
 
-    sendBtn.addEventListener('click', handleSend);
+    sendBtn.addEventListener('click', () => handleSend());
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') handleSend();
     });
+    micBtn.addEventListener('click', toggleListen);
 
-    // Load voices (some browsers need this)
+    // Load voices
     if (speechSynthesis.onvoiceschanged !== undefined) {
       speechSynthesis.onvoiceschanged = () => {};
     }
 
-    // Play button stops current speech
     playBtn.addEventListener('click', () => {
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-      }
+      if (speechSynthesis.speaking) speechSynthesis.cancel();
     });
+
+    // Soft welcome on first interaction (mobile audio unlock)
+    let welcomed = false;
+    function maybeWelcome() {
+      if (welcomed) return;
+      welcomed = true;
+      statusEl.textContent = 'Two-way ready. Tap the mic to begin.';
+    }
+    document.body.addEventListener('click', maybeWelcome, { once: true });
   </script>
 </body>
 </html>
