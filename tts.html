@@ -74,6 +74,10 @@ h1 {
 .btn.music.playing {
   background: #3a5a7a;
 }
+.btn.music.disabled {
+  background: #888;
+  opacity: 0.6;
+}
 .music-select {
   width: 100%;
   max-width: 280px;
@@ -99,6 +103,14 @@ h1 {
   border-radius: 10px;
   margin: 8px 0;
   font-size: 16px;
+}
+.settings-row {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
 }
 .status {
   margin-top: 16px;
@@ -153,6 +165,11 @@ h1 {
     <option value="https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3?filename=peaceful-garden-112198.mp3">Peaceful garden</option>
   </select>
 
+  <div class="settings-row">
+    <input type="checkbox" id="musicDisabled" />
+    <label for="musicDisabled">Disable music</label>
+  </div>
+
   <div class="login-prompt" id="loginPrompt" style="display:none;">
     <p>Enter your email to continue</p>
     <input type="email" id="email" placeholder="you@example.com" />
@@ -170,17 +187,38 @@ h1 {
     const loginBtn = document.getElementById('loginBtn');
     const musicBtn = document.getElementById('musicBtn');
     const musicSelect = document.getElementById('musicSelect');
+    const musicDisabledCheckbox = document.getElementById('musicDisabled');
     const loginPrompt = document.getElementById('loginPrompt');
     const emailInput = document.getElementById('email');
     const submitLogin = document.getElementById('submitLogin');
     const status = document.getElementById('status');
     const relaxAudio = document.getElementById('relaxAudio');
     let musicPlaying = false;
+    let musicDisabled = localStorage.getItem('ani-music-disabled') === 'true';
+
+    function updateMusicUI() {
+      musicDisabledCheckbox.checked = musicDisabled;
+      if (musicDisabled) {
+        musicBtn.classList.add('disabled');
+        musicBtn.textContent = 'Music disabled';
+        musicSelect.disabled = true;
+        if (musicPlaying) {
+          relaxAudio.pause();
+          musicPlaying = false;
+          musicBtn.classList.remove('playing');
+        }
+      } else {
+        musicBtn.classList.remove('disabled');
+        musicBtn.textContent = musicPlaying ? 'Pause music' : 'Relaxing music';
+        musicSelect.disabled = false;
+      }
+    }
 
     // Research mode: 30% volume
     relaxAudio.volume = 0.3;
 
     function setTrack(url) {
+      if (musicDisabled) return;
       relaxAudio.src = url;
       relaxAudio.volume = 0.3;
       if (musicPlaying) {
@@ -189,6 +227,7 @@ h1 {
     }
 
     async function startMusic() {
+      if (musicDisabled) return false;
       setTrack(musicSelect.value);
       try {
         await relaxAudio.play();
@@ -201,7 +240,15 @@ h1 {
       }
     }
 
+    musicDisabledCheckbox.addEventListener('change', () => {
+      musicDisabled = musicDisabledCheckbox.checked;
+      localStorage.setItem('ani-music-disabled', musicDisabled);
+      updateMusicUI();
+      status.textContent = musicDisabled ? 'Music disabled' : 'Music enabled · 30% vol';
+    });
+
     musicSelect.addEventListener('change', () => {
+      if (musicDisabled) return;
       setTrack(musicSelect.value);
       status.textContent = 'Track selected · 30% vol';
     });
@@ -236,11 +283,19 @@ h1 {
       status.textContent = 'Welcome, ' + email.split('@')[0];
       loginPrompt.style.display = 'none';
 
-      const started = await startMusic();
-      status.textContent = started ? 'Welcome. Music at 30% · Warp nominal' : 'Welcome. Tap music button to start.';
+      if (!musicDisabled) {
+        const started = await startMusic();
+        status.textContent = started ? 'Welcome. Music at 30% · Warp nominal' : 'Welcome. Tap music button to start.';
+      } else {
+        status.textContent = 'Welcome. Music disabled.';
+      }
     });
 
     musicBtn.addEventListener('click', async () => {
+      if (musicDisabled) {
+        status.textContent = 'Music is disabled. Uncheck the box to enable.';
+        return;
+      }
       if (musicPlaying) {
         relaxAudio.pause();
         musicPlaying = false;
@@ -254,16 +309,19 @@ h1 {
     });
 
     // Initial track
-    setTrack(musicSelect.value);
+    if (!musicDisabled) setTrack(musicSelect.value);
+    updateMusicUI();
 
-    // If already aboard (logged in), auto-start music
+    // If already aboard (logged in), auto-start music (unless disabled)
     const saved = localStorage.getItem('ani-email');
     if (saved) {
-      status.textContent = 'Aboard: ' + saved.split('@')[0] + ' · 30% vol';
-      setTimeout(async () => {
-        const started = await startMusic();
-        if (started) status.textContent = 'Aboard. Music running at 30% · Warp nominal';
-      }, 500);
+      status.textContent = 'Aboard: ' + saved.split('@')[0] + (musicDisabled ? ' · music disabled' : ' · 30% vol');
+      if (!musicDisabled) {
+        setTimeout(async () => {
+          const started = await startMusic();
+          if (started) status.textContent = 'Aboard. Music running at 30% · Warp nominal';
+        }, 500);
+      }
     }
   </script>
 </body>
