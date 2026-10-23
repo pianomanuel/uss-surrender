@@ -1,0 +1,40 @@
+{
+  "id": "DB-L1-MIND-SURRENDER",
+  "ship": "USS Surrender",
+  "board": "monopoly",
+  "level": 1,
+  "deed": "Mind Surrender",
+  "filed": "2026-10-23",
+  "class": "voice-roster",
+  "public": "PG-13",
+  "note": "Voice roster and watch only. No script body.",
+  "watch": {
+    "date": "2026-10-15",
+    "aboard": 2,
+    "crew": "One month mandatory leave before the new galaxy.",
+    "course": "Underworld-Maskless",
+    "port_station": "Recital"
+  },
+  "speeds": [
+    { "id": "slow", "label": "Slow", "rate": 0.97, "note": "3 percent under natural. Default." },
+    { "id": "natural", "label": "Natural", "rate": 1 },
+    { "id": "brisk", "label": "Brisk", "rate": 1.15 }
+  ],
+  "voices": [
+    { "id": "eve", "name": "Eve", "note": "Bright, British", "room": "Mind Surrender" },
+    { "id": "ara", "name": "Ara", "note": "Warm and close", "room": "Mind Surrender" },
+    { "id": "orion", "name": "Orion", "note": "Cinematic", "room": "Mind Surrender" },
+    { "id": "leo", "name": "Leo", "note": "Steady, British", "room": "Mind Surrender" },
+    { "id": "rex", "name": "Rex", "note": "Clear and sure", "room": "Mind Surrender" },
+    { "id": "luna", "name": "Luna", "note": "Gentle", "room": "Mind Surrender" },
+    { "id": "altair", "name": "Altair", "note": "Refined", "room": "Mind Surrender" },
+    { "id": "sal", "name": "Sal", "note": "Smooth", "room": "Mind Surrender" }
+  ],
+  "timeline": [
+    "15 October 2026",
+    "Two on the bridge",
+    "The crew is on a mandatory month of leave",
+    "Course set for Underworld-Maskless",
+    "Port station is Recital, slow pace 0.97"
+  ]
+}
