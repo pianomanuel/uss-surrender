@@ -113,6 +113,11 @@ h1 {
   font-size: 14px;
   min-height: 1.2em;
 }
+.warp-note {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #888;
+}
 </style>
 </head>
 <body>
@@ -139,7 +144,8 @@ h1 {
     <button class="btn" id="submitLogin">Continue</button>
   </div>
 
-  <div class="status" id="status">Choose music, bookmark, or email login</div>
+  <div class="status" id="status">Research mode · 30% vol · Warp engines nominal</div>
+  <div class="warp-note">Warp engines at nominal. Research only.</div>
 
   <audio id="relaxAudio" loop preload="none"></audio>
 
@@ -155,8 +161,12 @@ h1 {
     const relaxAudio = document.getElementById('relaxAudio');
     let musicPlaying = false;
 
+    // Research mode: 30% volume
+    relaxAudio.volume = 0.3;
+
     function setTrack(url) {
       relaxAudio.src = url;
+      relaxAudio.volume = 0.3;
       if (musicPlaying) {
         relaxAudio.play().catch(() => {});
       }
@@ -164,7 +174,7 @@ h1 {
 
     musicSelect.addEventListener('change', () => {
       setTrack(musicSelect.value);
-      status.textContent = 'Track selected';
+      status.textContent = 'Track selected · 30% vol';
     });
 
     bookmarkBtn.addEventListener('click', () => {
@@ -197,14 +207,14 @@ h1 {
       status.textContent = 'Welcome, ' + email.split('@')[0];
       loginPrompt.style.display = 'none';
 
-      // Auto-start selected music after login
+      // Auto-start selected music after login at 30%
       setTrack(musicSelect.value);
       try {
         await relaxAudio.play();
         musicPlaying = true;
         musicBtn.classList.add('playing');
         musicBtn.textContent = 'Pause music';
-        status.textContent = 'Welcome. Music started.';
+        status.textContent = 'Welcome. Music at 30% · Warp nominal';
       } catch (e) {
         status.textContent = 'Welcome. Tap music button to start.';
       }
@@ -216,7 +226,7 @@ h1 {
         musicPlaying = false;
         musicBtn.classList.remove('playing');
         musicBtn.textContent = 'Relaxing music';
-        status.textContent = 'Music paused';
+        status.textContent = 'Music paused · 30% vol';
       } else {
         setTrack(musicSelect.value);
         try {
@@ -224,7 +234,7 @@ h1 {
           musicPlaying = true;
           musicBtn.classList.add('playing');
           musicBtn.textContent = 'Pause music';
-          status.textContent = 'Relaxing music playing';
+          status.textContent = 'Music playing at 30% · Warp nominal';
         } catch (e) {
           status.textContent = 'Tap again to allow audio';
         }
@@ -236,7 +246,7 @@ h1 {
 
     const saved = localStorage.getItem('ani-email');
     if (saved) {
-      status.textContent = 'Welcome back, ' + saved.split('@')[0];
+      status.textContent = 'Welcome back, ' + saved.split('@')[0] + ' · 30% vol';
     }
   </script>
 </body>
