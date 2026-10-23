@@ -190,15 +190,13 @@ def check_site(repo_root: Path, manifest_path: Path) -> list[str]:
             return ["manifest_invalid"]
         allowed.add(rel.as_posix())
 
-    # The configured publish tree must match the allowlist exactly. Walk only
-    # inside the explicitly approved publish root, never the repository root.
+    # Walk only inside the explicitly approved publish root, never the repo root.
     actual: set[str] = set()
     try:
         for current, dirs, names in os.walk(publish_root, followlinks=False):
             current_path = Path(current)
             for dirname in list(dirs):
-                entry = current_path / dirname
-                if entry.is_symlink():
+                if (current_path / dirname).is_symlink():
                     return ["publish_tree_invalid"]
             for name in names:
                 entry = current_path / name
@@ -210,24 +208,8 @@ def check_site(repo_root: Path, manifest_path: Path) -> list[str]:
     if actual != allowed:
         return ["publish_tree_allowlist_mismatch"]
 
-    manifest_files = set(allowed)
+    errors: list[str] = []
     html_files = sorted(p for p in manifest["files"] if p.suffix.lower() in {".html", ".htm"})
-    for rel in html_files:
-        document = publish_root / Path(*rel.parts)
-        try:
-            source = document.read_text(encoding="utf-8")
-            parser = References()
-            parser.feed(source)
-            parser.close()
-        except (OSError, UnicodeError, ValueError):
-            errors = ["html_unreadable"]
-            return errors
-        for url in parser.values:
-            problem = _target_for(document, url, publish_root, manifest_files)
-            if problem:
-                # Deduplicate diagnostics and do not reveal URLs or filenames.
-                pass
-    errors = []
     for rel in html_files:
         document = publish_root / Path(*rel.parts)
         try:
@@ -238,7 +220,7 @@ def check_site(repo_root: Path, manifest_path: Path) -> list[str]:
             errors.append("html_unreadable")
             continue
         for url in parser.values:
-            problem = _target_for(document, url, publish_root, manifest_files)
+            problem = _target_for(document, url, publish_root, allowed)
             if problem:
                 errors.append(problem)
     return errors
