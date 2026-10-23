@@ -81,6 +81,16 @@ h1 {
 .btn.music.playing {
   background: #3a5a7a;
 }
+.music-select {
+  width: 100%;
+  max-width: 280px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  background: white;
+}
 .login-prompt {
   margin-top: 24px;
   padding: 16px;
@@ -117,28 +127,45 @@ h1 {
     <button class="btn music" id="musicBtn">Relaxing music</button>
   </div>
 
+  <select class="music-select" id="musicSelect">
+    <option value="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=relaxing-ambient-11157.mp3">Soft ambient</option>
+    <option value="https://cdn.pixabay.com/download/audio/2021/08/09/audio_12b0c7443c.mp3?filename=relaxing-145038.mp3">Calm piano</option>
+    <option value="https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3?filename=peaceful-garden-112198.mp3">Peaceful garden</option>
+  </select>
+
   <div class="login-prompt" id="loginPrompt" style="display:none;">
     <p>Enter your email to continue</p>
     <input type="email" id="email" placeholder="you@example.com" />
     <button class="btn" id="submitLogin">Continue</button>
   </div>
 
-  <div class="status" id="status">One-click bookmark, email login, or relaxing music</div>
+  <div class="status" id="status">Choose music, bookmark, or email login</div>
 
-  <audio id="relaxAudio" loop preload="none">
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=relaxing-ambient-11157.mp3" type="audio/mpeg">
-  </audio>
+  <audio id="relaxAudio" loop preload="none"></audio>
 
   <script>
     const bookmarkBtn = document.getElementById('bookmark');
     const loginBtn = document.getElementById('loginBtn');
     const musicBtn = document.getElementById('musicBtn');
+    const musicSelect = document.getElementById('musicSelect');
     const loginPrompt = document.getElementById('loginPrompt');
     const emailInput = document.getElementById('email');
     const submitLogin = document.getElementById('submitLogin');
     const status = document.getElementById('status');
     const relaxAudio = document.getElementById('relaxAudio');
     let musicPlaying = false;
+
+    function setTrack(url) {
+      relaxAudio.src = url;
+      if (musicPlaying) {
+        relaxAudio.play().catch(() => {});
+      }
+    }
+
+    musicSelect.addEventListener('change', () => {
+      setTrack(musicSelect.value);
+      status.textContent = 'Track selected';
+    });
 
     bookmarkBtn.addEventListener('click', () => {
       if (window.sidebar && window.sidebar.addPanel) {
@@ -160,7 +187,7 @@ h1 {
       status.textContent = 'Enter email to continue';
     });
 
-    submitLogin.addEventListener('click', () => {
+    submitLogin.addEventListener('click', async () => {
       const email = emailInput.value.trim();
       if (!email || !email.includes('@')) {
         status.textContent = 'Please enter a valid email';
@@ -169,6 +196,18 @@ h1 {
       localStorage.setItem('ani-email', email);
       status.textContent = 'Welcome, ' + email.split('@')[0];
       loginPrompt.style.display = 'none';
+
+      // Auto-start selected music after login
+      setTrack(musicSelect.value);
+      try {
+        await relaxAudio.play();
+        musicPlaying = true;
+        musicBtn.classList.add('playing');
+        musicBtn.textContent = 'Pause music';
+        status.textContent = 'Welcome. Music started.';
+      } catch (e) {
+        status.textContent = 'Welcome. Tap music button to start.';
+      }
     });
 
     musicBtn.addEventListener('click', async () => {
@@ -179,6 +218,7 @@ h1 {
         musicBtn.textContent = 'Relaxing music';
         status.textContent = 'Music paused';
       } else {
+        setTrack(musicSelect.value);
         try {
           await relaxAudio.play();
           musicPlaying = true;
@@ -190,6 +230,9 @@ h1 {
         }
       }
     });
+
+    // Initial track
+    setTrack(musicSelect.value);
 
     const saved = localStorage.getItem('ani-email');
     if (saved) {
