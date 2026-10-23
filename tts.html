@@ -75,6 +75,12 @@ h1 {
 .btn.secondary {
   background: #a0a0a0;
 }
+.btn.music {
+  background: #5a7a9a;
+}
+.btn.music.playing {
+  background: #3a5a7a;
+}
 .login-prompt {
   margin-top: 24px;
   padding: 16px;
@@ -108,6 +114,7 @@ h1 {
   <div class="actions">
     <button class="btn" id="bookmark">Add bookmark</button>
     <button class="btn secondary" id="loginBtn">Email login</button>
+    <button class="btn music" id="musicBtn">Relaxing music</button>
   </div>
 
   <div class="login-prompt" id="loginPrompt" style="display:none;">
@@ -116,24 +123,29 @@ h1 {
     <button class="btn" id="submitLogin">Continue</button>
   </div>
 
-  <div class="status" id="status">One-click bookmark or email login</div>
+  <div class="status" id="status">One-click bookmark, email login, or relaxing music</div>
+
+  <audio id="relaxAudio" loop preload="none">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=relaxing-ambient-11157.mp3" type="audio/mpeg">
+  </audio>
 
   <script>
     const bookmarkBtn = document.getElementById('bookmark');
     const loginBtn = document.getElementById('loginBtn');
+    const musicBtn = document.getElementById('musicBtn');
     const loginPrompt = document.getElementById('loginPrompt');
     const emailInput = document.getElementById('email');
     const submitLogin = document.getElementById('submitLogin');
     const status = document.getElementById('status');
+    const relaxAudio = document.getElementById('relaxAudio');
+    let musicPlaying = false;
 
     bookmarkBtn.addEventListener('click', () => {
-      // Attempt to add bookmark (browser support varies)
       if (window.sidebar && window.sidebar.addPanel) {
         window.sidebar.addPanel(document.title, window.location.href, '');
       } else if (window.external && ('AddFavorite' in window.external)) {
         window.external.AddFavorite(window.location.href, document.title);
       } else {
-        // Fallback: copy URL and prompt
         navigator.clipboard.writeText(window.location.href).then(() => {
           status.textContent = 'Link copied — add to bookmarks manually';
         }).catch(() => {
@@ -154,14 +166,31 @@ h1 {
         status.textContent = 'Please enter a valid email';
         return;
       }
-      // Simple local storage of email for session (no real auth)
       localStorage.setItem('ani-email', email);
       status.textContent = 'Welcome, ' + email.split('@')[0];
       loginPrompt.style.display = 'none';
-      // Optional: redirect or unlock further features here
     });
 
-    // Restore if already logged in
+    musicBtn.addEventListener('click', async () => {
+      if (musicPlaying) {
+        relaxAudio.pause();
+        musicPlaying = false;
+        musicBtn.classList.remove('playing');
+        musicBtn.textContent = 'Relaxing music';
+        status.textContent = 'Music paused';
+      } else {
+        try {
+          await relaxAudio.play();
+          musicPlaying = true;
+          musicBtn.classList.add('playing');
+          musicBtn.textContent = 'Pause music';
+          status.textContent = 'Relaxing music playing';
+        } catch (e) {
+          status.textContent = 'Tap again to allow audio';
+        }
+      }
+    });
+
     const saved = localStorage.getItem('ani-email');
     if (saved) {
       status.textContent = 'Welcome back, ' + saved.split('@')[0];
