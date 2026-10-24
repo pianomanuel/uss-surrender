@@ -171,8 +171,8 @@ h1 {
   </div>
 
   <div class="login-prompt" id="loginPrompt" style="display:none;">
-    <p>Enter your email to continue</p>
-    <input type="email" id="email" placeholder="you@example.com" />
+    <p>Enter your regular email to continue</p>
+    <input type="email" id="email" placeholder="you@example.com" value="pianomanuel@gmail.com" />
     <button class="btn" id="submitLogin">Continue</button>
   </div>
 
@@ -270,7 +270,7 @@ h1 {
 
     loginBtn.addEventListener('click', () => {
       loginPrompt.style.display = loginPrompt.style.display === 'none' ? 'block' : 'none';
-      status.textContent = 'Enter email to continue';
+      status.textContent = 'Enter regular email to continue';
     });
 
     submitLogin.addEventListener('click', async () => {
