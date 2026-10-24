@@ -1,0 +1,65 @@
+{
+  "id": "DB-L1-MIND-SURRENDER",
+  "ship": "USS Surrender",
+  "board": "monopoly",
+  "level": 1,
+  "deed": "Mind Surrender",
+  "filed": "2026-10-23",
+  "class": "voice-roster",
+  "public": "PG-13",
+  "note": "Titles of created readings. No script body. Private scenes stay in the private library.",
+  "tts": {
+    "voice": "eve",
+    "source": "existing",
+    "file": "Phoenix_Flare_commish_eve.mp3",
+    "speed": 0.75
+  },
+  "watch": {
+    "date": "2026-10-15",
+    "aboard": 2,
+    "crew": "One month mandatory leave before the new galaxy.",
+    "course": "Underworld-Maskless",
+    "port_station": "Recital"
+  },
+  "speeds": [
+    { "id": "sultry", "label": "Sultry", "rate": 0.75, "note": "Default." },
+    { "id": "natural", "label": "Natural", "rate": 1 },
+    { "id": "brisk", "label": "Brisk", "rate": 1.15 }
+  ],
+  "voices": [
+    { "id": "eve", "name": "Eve", "note": "Existing TTS", "room": "Mind Surrender", "file": "Phoenix_Flare_commish_eve.mp3" },
+    { "id": "ara", "name": "Ara", "note": "Warm and close", "room": "Mind Surrender" },
+    { "id": "orion", "name": "Orion", "note": "Cinematic", "room": "Mind Surrender" },
+    { "id": "leo", "name": "Leo", "note": "Steady, British", "room": "Mind Surrender" },
+    { "id": "rex", "name": "Rex", "note": "Clear and sure", "room": "Mind Surrender" },
+    { "id": "luna", "name": "Luna", "note": "Gentle", "room": "Mind Surrender" },
+    { "id": "altair", "name": "Altair", "note": "Refined", "room": "Mind Surrender" },
+    { "id": "sal", "name": "Sal", "note": "Smooth", "room": "Mind Surrender" }
+  ],
+  "pieces": [
+    { "id": "flare", "title": "Phoenix Flare", "where": "public card" },
+    { "id": "trilogy", "title": "Trilogy", "where": "public card" },
+    { "id": "chapter-one", "title": "Chapter One", "where": "public card" },
+    { "id": "thought", "title": "The Thought That Stays", "where": "public card" },
+    { "id": "eve-test", "title": "Eve test", "where": "ship", "file": "Phoenix_Flare_commish_eve.mp3" },
+    { "id": "fall-1001", "title": "The Fall", "date": "2026-10-01", "where": "private library" },
+    { "id": "fall-1007", "title": "The Fall", "date": "2026-10-07", "where": "private library" },
+    { "id": "heal-1001", "title": "The Healing", "date": "2026-10-01", "where": "private library" },
+    { "id": "heal-1004", "title": "The Healing", "date": "2026-10-04", "where": "private library" },
+    { "id": "heal-1007", "title": "The Healing", "date": "2026-10-07", "where": "private library" },
+    { "id": "rise-1001", "title": "The Rising", "date": "2026-10-01", "where": "private library" },
+    { "id": "rise-1004", "title": "The Rising", "date": "2026-10-04", "where": "private library" },
+    { "id": "rise-1008", "title": "The Rising", "date": "2026-10-08", "where": "private library" },
+    { "id": "hour", "title": "Hour", "where": "private library" },
+    { "id": "chapter-two", "title": "Chapter Two", "where": "private library" },
+    { "id": "trilogy-source", "title": "The Surrender Trilogy", "where": "private library" }
+  ],
+  "timeline": [
+    "15 October 2026",
+    "Two on the bridge",
+    "The crew is on a mandatory month of leave",
+    "Course set for Underworld-Maskless",
+    "Port station is Recital",
+    "Created readings indexed 23 October 2026. Bodies not stored."
+  ]
+}
