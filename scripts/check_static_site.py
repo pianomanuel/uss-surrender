@@ -83,6 +83,9 @@ def _read_manifest(repo_root: Path, manifest_path: Path):
     files = data.get("files")
     if root_rel is None or not isinstance(files, list) or not files:
         return None, "manifest_invalid"
+    # Never treat Git metadata or CI configuration as a publish root.
+    if any(part.casefold() in {".git", ".github"} for part in root_rel.parts):
+        return None, "manifest_invalid"
     file_paths: list[PurePosixPath] = []
     seen: set[str] = set()
     for raw in files:
