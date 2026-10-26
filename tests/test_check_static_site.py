@@ -48,6 +48,12 @@ class PublishManifestTests(unittest.TestCase):
         self.write_manifest(["index.html"], root=".")
         self.assertEqual(["manifest_invalid"], checker.check_site(self.repo, self.manifest))
 
+    def test_git_control_directories_cannot_be_publish_roots(self):
+        for root in (".git", ".github"):
+            with self.subTest(root=root):
+                self.write_manifest(["placeholder.txt"], root=root)
+                self.assertEqual(["manifest_invalid"], checker.check_site(self.repo, self.manifest))
+
     def test_path_traversal_in_manifest_is_rejected(self):
         self.write_manifest(["../private.txt"])
         self.assertEqual(["manifest_invalid"], checker.check_site(self.repo, self.manifest))
