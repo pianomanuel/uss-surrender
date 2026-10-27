@@ -58,6 +58,18 @@ class PublishManifestTests(unittest.TestCase):
         self.write_manifest(["../private.txt"])
         self.assertEqual(["manifest_invalid"], checker.check_site(self.repo, self.manifest))
 
+    def test_restricted_source_names_cannot_be_allowlisted(self):
+        for restricted in ("tts.html", "TTS-13/chapter.txt", "deck13-synthetic.html", "nested/floor-13-notes.txt"):
+            with self.subTest(restricted=restricted):
+                self.write_manifest(["index.html", restricted])
+                self.assertEqual(["manifest_invalid"], checker.check_site(self.repo, self.manifest))
+
+    def test_restricted_source_namespace_cannot_be_publish_root(self):
+        for root in ("TTS-13", "deck13-source", "floor_13"):
+            with self.subTest(root=root):
+                self.write_manifest(["index.html"], root=root)
+                self.assertEqual(["manifest_invalid"], checker.check_site(self.repo, self.manifest))
+
     def test_unlisted_file_fails_without_disclosing_its_name(self):
         (self.publish / "restricted-note.txt").write_text("synthetic-private-marker", encoding="utf-8")
         errors = checker.check_site(self.repo, self.manifest)
