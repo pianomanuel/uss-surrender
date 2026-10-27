@@ -15,6 +15,25 @@ from urllib.parse import unquote, urlsplit
 
 DEFAULT_MANIFEST = ".github/publish-manifest.json"
 
+# Defense in depth: known restricted source namespaces must never be allowlisted.
+# This is not a substitute for keeping restricted source out of a public repository.
+_RESERVED_PUBLISH_NAMES = {"tts", "tts-13", "floor13", "floor-13", "deck13", "deck-13"}
+_RESERVED_PUBLISH_PREFIXES = (
+    "deck13-", "deck-13-", "floor13-", "floor-13-", "tts-13-",
+)
+
+
+def _is_reserved_publish_path(path: PurePosixPath) -> bool:
+    """Reject known restricted-source names anywhere in a proposed public path."""
+    for part in path.parts:
+        normalized = part.casefold().replace("_", "-").replace(" ", "-")
+        stem = Path(normalized).stem
+        if normalized in _RESERVED_PUBLISH_NAMES or stem in _RESERVED_PUBLISH_NAMES:
+            return True
+        if normalized.startswith(_RESERVED_PUBLISH_PREFIXES) or stem.startswith(_RESERVED_PUBLISH_PREFIXES):
+            return True
+    return False
+
 
 class References(HTMLParser):
     def __init__(self) -> None:
@@ -83,6 +102,8 @@ def _read_manifest(repo_root: Path, manifest_path: Path):
     files = data.get("files")
     if root_rel is None or not isinstance(files, list) or not files:
         return None, "manifest_invalid"
+    if _is_reserved_publish_path(root_rel):
+        return None, "manifest_invalid"
     # Never treat Git metadata or CI configuration as a publish root.
     if any(part.casefold() in {".git", ".github"} for part in root_rel.parts):
         return None, "manifest_invalid"
@@ -90,7 +111,7 @@ def _read_manifest(repo_root: Path, manifest_path: Path):
     seen: set[str] = set()
     for raw in files:
         rel = _safe_relative(raw)
-        if rel is None or str(rel) in seen:
+        if rel is None or _is_reserved_publish_path(rel) or str(rel) in seen:
             return None, "manifest_invalid"
         seen.add(str(rel))
         file_paths.append(rel)
