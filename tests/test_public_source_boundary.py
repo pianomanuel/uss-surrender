@@ -1,6 +1,9 @@
 import importlib.util
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 SCRIPT = Path(__file__).parents[1] / "scripts" / "check_public_source_boundary.py"
 spec = importlib.util.spec_from_file_location("check_public_source_boundary", SCRIPT)
@@ -25,6 +28,12 @@ class PublicSourceBoundaryTests(unittest.TestCase):
             with self.subTest(path_kind=path.split("/")[-1].split("-")[0]):
                 self.assertEqual(["restricted_source_tracked"], checker.check_paths([path]))
 
+    def test_tts13_variant_is_detected_case_insensitively(self):
+        self.assertEqual(
+            ["restricted_source_tracked"],
+            checker.check_paths(["synthetic/TtS13/source.txt"]),
+        )
+
     def test_backslash_paths_are_normalized(self):
         self.assertEqual(["restricted_source_tracked"], checker.check_paths([r"synthetic\\floor_13\\note.txt"]))
 
@@ -33,6 +42,16 @@ class PublicSourceBoundaryTests(unittest.TestCase):
         errors = checker.check_paths([candidate])
         self.assertNotIn("PRIVATE_MARKER", " ".join(errors))
         self.assertNotIn(candidate, " ".join(errors))
+
+    def test_inventory_failure_fails_closed_without_leaking_exception_details(self):
+        output = StringIO()
+        with patch.object(checker.subprocess, "run", side_effect=checker.subprocess.CalledProcessError(1, ["git", "ls-files"])):
+            with redirect_stdout(output):
+                result = checker.main()
+        self.assertEqual(1, result)
+        self.assertIn("inventory_unavailable", output.getvalue())
+        self.assertNotIn("CalledProcessError", output.getvalue())
+        self.assertNotIn("private", output.getvalue().casefold())
 
 
 if __name__ == "__main__":
