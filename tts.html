@@ -69,14 +69,21 @@ h1 {
   background: #a0a0a0;
 }
 .btn.music {
-  background: #5a7a9a;
+  background: #2f6fad;
+  font-size: 18px;
+  padding: 18px;
+  min-height: 56px;
 }
 .btn.music.playing {
-  background: #3a5a7a;
+  background: #1f4f7d;
 }
 .btn.music.disabled {
   background: #888;
   opacity: 0.6;
+}
+.btn.music:focus-visible {
+  outline: 3px solid #88ccff;
+  outline-offset: 2px;
 }
 .music-select {
   width: 100%;
@@ -156,7 +163,7 @@ h1 {
   <div class="actions">
     <button class="btn" id="bookmark">Add bookmark</button>
     <button class="btn secondary" id="loginBtn">Email login</button>
-    <button class="btn music" id="musicBtn">Relaxing music</button>
+    <button class="btn music" id="musicBtn" type="button">Play music</button>
   </div>
 
   <select class="music-select" id="musicSelect">
@@ -176,11 +183,13 @@ h1 {
     <button class="btn" id="submitLogin">Continue</button>
   </div>
 
-  <div class="status" id="status">Research mode · 30% vol · Warp engines nominal</div>
-  <div class="warp-note">Warp engines at nominal. Research only. Runs if aboard from login.</div>
+  <div class="status" id="status">Tap Play music to start · Warp engines nominal</div>
+  <div class="warp-note">Warp engines at nominal. On iPhone/Safari, tap Play music once to start audio.</div>
   <div class="mssql-note">Ship structure built parallel to normal MSSQL (decks, levels, objects).</div>
 
-  <audio id="relaxAudio" loop preload="none"></audio>
+  <audio id="relaxAudio" loop preload="auto" playsinline>
+    <source id="relaxSource" src="audio/ambient/calm-drift.mp3" type="audio/mpeg">
+  </audio>
 
   <script>
     const bookmarkBtn = document.getElementById('bookmark');
@@ -193,9 +202,13 @@ h1 {
     const submitLogin = document.getElementById('submitLogin');
     const status = document.getElementById('status');
     const relaxAudio = document.getElementById('relaxAudio');
+    const relaxSource = document.getElementById('relaxSource');
     let musicPlaying = false;
     let musicDisabled = localStorage.getItem('ani-music-disabled') === 'true';
     let loadFallbackInFlight = false;
+    let fallbackAttempts = 0;
+    // Default 0.6: iOS Safari ignores element.volume, so files are loudness-normalized instead.
+    const DEFAULT_VOLUME = 0.6;
 
     function trackLabel(url) {
       const opt = Array.from(musicSelect.options).find(o => o.value === url);
@@ -224,17 +237,24 @@ h1 {
       }
     }
 
-    // Research mode: 30% volume
-    relaxAudio.volume = 0.3;
+    relaxAudio.volume = DEFAULT_VOLUME;
     relaxAudio.loop = true;
+    try { relaxAudio.setAttribute('playsinline', ''); } catch (_) {}
 
-    function setTrack(url) {
+    function setTrack(url, { reload = true } = {}) {
       if (musicDisabled) return;
-      relaxAudio.src = url;
-      relaxAudio.volume = 0.3;
+      const absHint = url;
+      if (relaxSource) {
+        relaxSource.src = absHint;
+        relaxSource.type = 'audio/mpeg';
+      }
+      // Keep audio.src in sync for browsers that ignore nested <source> after first load
+      relaxAudio.src = absHint;
+      relaxAudio.volume = DEFAULT_VOLUME;
+      if (reload) {
+        try { relaxAudio.load(); } catch (_) {}
+      }
     }
-
-    let fallbackAttempts = 0;
 
     function tryNextTrack(failedUrl) {
       if (musicDisabled || loadFallbackInFlight) return;
@@ -249,47 +269,65 @@ h1 {
       }
       fallbackAttempts += 1;
       const failedIdx = options.findIndex(o => o.value === failedUrl);
-      const start = failedIdx >= 0 ? failedIdx : currentTrackIndex();
-      const nextIdx = (start + 1) % options.length;
+      const startIdx = failedIdx >= 0 ? failedIdx : currentTrackIndex();
+      const nextIdx = (startIdx + 1) % options.length;
       const next = options[nextIdx].value;
       musicSelect.selectedIndex = nextIdx;
       status.textContent = "Couldn't load track " + trackLabel(failedUrl) + ' — trying next';
       loadFallbackInFlight = true;
       setTrack(next);
-      const onReady = async () => {
+      const onReady = () => {
         relaxAudio.removeEventListener('canplay', onReady);
         loadFallbackInFlight = false;
-        await startMusic({ fromFallback: true });
+        // Do not auto-call play here on iOS without a fresh user gesture.
+        status.textContent = "Couldn't load track " + trackLabel(failedUrl) + ' — tap Play for ' + trackLabel(next);
       };
       relaxAudio.addEventListener('canplay', onReady, { once: true });
-      relaxAudio.load();
       setTimeout(() => { loadFallbackInFlight = false; }, 4000);
     }
 
-    async function startMusic(opts = {}) {
-      if (musicDisabled) return false;
+    function markPlaying(url) {
+      musicPlaying = true;
+      musicBtn.classList.add('playing');
+      musicBtn.textContent = 'Pause music';
+      fallbackAttempts = 0;
+      status.textContent = 'Playing: ' + trackLabel(url);
+    }
+
+    function markPaused(msg) {
+      musicPlaying = false;
+      musicBtn.classList.remove('playing');
+      musicBtn.textContent = 'Play music';
+      if (msg) status.textContent = msg;
+    }
+
+    // Call play() directly from a user-gesture handler (Safari/iOS requirement).
+    function playFromUserGesture() {
+      if (musicDisabled) return Promise.resolve(false);
       const url = musicSelect.value;
-      setTrack(url);
-      try {
-        await relaxAudio.play();
-        musicPlaying = true;
-        musicBtn.classList.add('playing');
-        musicBtn.textContent = 'Pause music';
-        status.textContent = 'Playing: ' + trackLabel(url);
-        fallbackAttempts = 0;
+      // Only reset src if needed — preserve gesture chain when already loaded.
+      const current = (relaxSource && relaxSource.getAttribute('src')) || '';
+      if (current !== url || !relaxAudio.src) {
+        setTrack(url, { reload: true });
+      }
+      relaxAudio.volume = DEFAULT_VOLUME;
+      const playPromise = relaxAudio.play();
+      if (!playPromise || typeof playPromise.then !== 'function') {
+        markPlaying(url);
+        return Promise.resolve(true);
+      }
+      return playPromise.then(() => {
+        markPlaying(url);
         return true;
-      } catch (e) {
-        musicPlaying = false;
-        musicBtn.classList.remove('playing');
-        musicBtn.textContent = 'Play music';
+      }).catch((e) => {
         const name = (e && e.name) || '';
         if (name === 'NotAllowedError') {
-          status.textContent = 'Tap Play to start music (browser blocked autoplay)';
-        } else if (!opts.fromFallback) {
-          status.textContent = 'Tap Play music to start · 30% vol';
+          markPaused('Tap Play to start music (browser blocked autoplay)');
+        } else {
+          markPaused('Tap Play music to start');
         }
         return false;
-      }
+      });
     }
 
     relaxAudio.addEventListener('error', () => {
@@ -301,9 +339,9 @@ h1 {
 
     musicDisabledCheckbox.addEventListener('change', () => {
       musicDisabled = musicDisabledCheckbox.checked;
-      localStorage.setItem('ani-music-disabled', musicDisabled);
+      localStorage.setItem('ani-music-disabled', musicDisabled ? 'true' : 'false');
       updateMusicUI();
-      status.textContent = musicDisabled ? 'Music disabled' : 'Music enabled · 30% vol';
+      status.textContent = musicDisabled ? 'Music disabled' : 'Music enabled · tap Play';
     });
 
     musicSelect.addEventListener('change', () => {
@@ -311,9 +349,10 @@ h1 {
       loadFallbackInFlight = false;
       fallbackAttempts = 0;
       setTrack(musicSelect.value);
-      status.textContent = 'Track selected: ' + trackLabel(musicSelect.value) + ' · 30% vol';
+      status.textContent = 'Track selected: ' + trackLabel(musicSelect.value) + ' · tap Play';
+      // Changing track while playing: try continue, but may need another tap on iOS.
       if (musicPlaying) {
-        startMusic();
+        playFromUserGesture();
       }
     });
 
@@ -337,56 +376,59 @@ h1 {
       status.textContent = 'Enter regular email to continue';
     });
 
-    submitLogin.addEventListener('click', async () => {
+    submitLogin.addEventListener('click', () => {
       const email = emailInput.value.trim();
       if (!email || !email.includes('@')) {
         status.textContent = 'Please enter a valid email';
         return;
       }
       localStorage.setItem('ani-email', email);
-      status.textContent = 'Welcome, ' + email.split('@')[0];
       loginPrompt.style.display = 'none';
-
-      if (!musicDisabled) {
-        const started = await startMusic();
-        if (!started && status.textContent.indexOf('Tap Play') === -1) {
-          status.textContent = 'Welcome. Tap Play music to start.';
-        } else if (started) {
-          status.textContent = 'Welcome. Playing: ' + trackLabel(musicSelect.value);
-        }
-      } else {
-        status.textContent = 'Welcome. Music disabled.';
+      if (musicDisabled) {
+        status.textContent = 'Welcome, ' + email.split('@')[0] + '. Music disabled.';
+        return;
       }
+      // Start music in THIS click handler so Safari treats it as a user gesture.
+      playFromUserGesture().then((started) => {
+        if (started) {
+          status.textContent = 'Welcome. Playing: ' + trackLabel(musicSelect.value);
+        } else {
+          status.textContent = 'Welcome, ' + email.split('@')[0] + '. Tap Play music to start.';
+        }
+      });
     });
 
-    musicBtn.addEventListener('click', async () => {
+    musicBtn.addEventListener('click', () => {
       if (musicDisabled) {
         status.textContent = 'Music is disabled. Uncheck the box to enable.';
         return;
       }
-      if (musicPlaying) {
+      if (musicPlaying && !relaxAudio.paused) {
         relaxAudio.pause();
-        musicPlaying = false;
-        musicBtn.classList.remove('playing');
-        musicBtn.textContent = 'Play music';
-        status.textContent = 'Music paused · 30% vol';
-      } else {
-        await startMusic();
+        markPaused('Music paused · tap Play to resume');
+        return;
       }
+      // Direct play() from the click handler — required on iOS Safari.
+      playFromUserGesture();
     });
 
-    // Initial track
-    if (!musicDisabled) setTrack(musicSelect.value);
+    // Prepare first track (do not autoplay; Safari will block it).
+    if (!musicDisabled) setTrack(musicSelect.value, { reload: true });
     updateMusicUI();
 
-    // If already aboard (logged in), auto-start music (unless disabled)
     const saved = localStorage.getItem('ani-email');
     if (saved) {
-      status.textContent = 'Aboard: ' + saved.split('@')[0] + (musicDisabled ? ' · music disabled' : ' · 30% vol');
+      status.textContent = 'Aboard: ' + saved.split('@')[0] + (musicDisabled ? ' · music disabled' : ' · tap Play music');
+      // Attempt autoplay only as a soft convenience; never rely on it for Safari/iOS.
       if (!musicDisabled) {
-        setTimeout(async () => {
-          await startMusic();
-        }, 500);
+        setTimeout(() => {
+          const p = relaxAudio.play();
+          if (p && typeof p.then === 'function') {
+            p.then(() => markPlaying(musicSelect.value)).catch(() => {
+              status.textContent = 'Aboard: ' + saved.split('@')[0] + ' · tap Play music to start';
+            });
+          }
+        }, 300);
       }
     }
   </script>
