@@ -1,55 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f4efe6">
-<title>Ani · Listen Court</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>USS Surrender — Bridge</title>
 <style>
-body{margin:0;background:#f4efe6;color:#1a1a1a;font-family:-apple-system,system-ui,sans-serif;text-align:center;padding:48px 20px;}
-h1{font-size:48px;font-weight:500;margin:0 0 6px}
-p{color:#6b6b6b;margin:0 0 36px}
-button{display:block;width:100%;max-width:300px;margin:0 auto 14px;padding:20px;font-size:20px;border:0;border-radius:16px;background:#2f6fad;color:#fff}
-button.on{background:#1f4f7d}
-select{width:100%;max-width:300px;padding:14px;font-size:17px;border-radius:12px;border:1px solid #ccc;background:#fff}
-#status{margin-top:22px;color:#555;font-size:16px;min-height:1.4em}
-.tip{margin-top:28px;font-size:13px;color:#888}
-</style>
-</head>
-<body>
-<div id="gate" style="position:fixed;inset:0;background:#0b1020;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:9999;font-family:system-ui">
-<h2>USS Surrender Login</h2><p id="gmsg">Enter your passphrase</p>
-<input id="gpw" type="password" style="font-size:18px;padding:8px;border-radius:8px">
-<button id="gbtn" style="font-size:18px;padding:8px 20px;border-radius:8px">Sign in</button></div>
-<script>(function(){const K='uss-gate-hash',g=document.getElementById('gate'),m=document.getElementById('gmsg'),i=document.getElementById('gpw');
+:root{--gold:#d4a84b;--ink:#0a0a0c}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);color:#eee;font-family:system-ui,-apple-system,sans-serif}
+.bg{position:fixed;inset:0;background:url(img/tts/bridge.jpg) center/cover;filter:brightness(.45);z-index:-1}
+header{padding:28px 18px 8px;text-align:center}h1{margin:0;color:var(--gold);letter-spacing:.12em;font-size:1.5rem}
+header p{margin:6px 0 0;opacity:.8}
+.wrap{max-width:900px;margin:auto;padding:12px 16px 60px}
+.card{background:rgba(12,12,16,.78);border:1px solid rgba(212,168,75,.45);border-radius:16px;padding:16px;margin:14px 0;backdrop-filter:blur(6px)}
+.card h2{margin:0 0 10px;color:var(--gold);font-size:1.05rem;letter-spacing:.08em}
+.captain{display:flex;gap:14px;align-items:center}.captain img{width:110px;height:110px;object-fit:cover;border-radius:50%;border:2px solid var(--gold)}
+.crew{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.crew img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;border:1px solid rgba(212,168,75,.5)}
+.crew figcaption{text-align:center;font-size:.85rem;margin-top:4px;opacity:.85}
+button,select{font-size:1rem;padding:10px 14px;border-radius:10px;border:1px solid var(--gold);background:#16140f;color:#fff}
+#play{background:var(--gold);color:#111;font-weight:600}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.links a{display:block;color:#fff;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);text-decoration:none}
+.lounge{width:100%;border-radius:12px}small{opacity:.7}
+#gate{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:url(img/tts/door.jpg) center/cover}
+#gate .box{background:rgba(0,0,0,.7);padding:24px;border-radius:16px;border:1px solid var(--gold);text-align:center;width:min(90vw,340px)}
+#gate input{width:100%;font-size:18px;padding:10px;border-radius:10px;border:1px solid var(--gold);background:#111;color:#fff;margin:10px 0}
+#gate button{width:100%}
+</style></head><body>
+<div id="gate"><div class="box"><h1>USS SURRENDER</h1><p id="gmsg">Enter your passphrase</p><input id="gpw" type="password" autocomplete="current-password"><button id="gbtn">Board the ship</button></div></div>
+<div class="bg"></div>
+<header><h1>USS SURRENDER</h1><p>Bridge · Captain on deck</p></header>
+<main class="wrap">
+<section class="card captain"><img src="img/tts/captain.jpg" alt="Captain Robert"><div><h2>CAPTAIN</h2><div>Robert Manuel</div><small>USS-NIMITZ-FURY · <span id="clock"></span></small></div></section>
+<section class="card"><h2>SHIP'S MUSIC</h2><div class="row"><button id="play" type="button">Play</button>
+<select id="track"><option value="audio/ambient/calm-drift.mp3">Calm drift</option><option value="audio/ambient/deep-space-pad.mp3">Deep space pad</option><option value="audio/ambient/ocean-hum.mp3">Ocean hum</option></select></div>
+<p id="status"><small>Ready. On iPhone, turn the silent switch off.</small></p>
+<audio id="a" src="audio/ambient/calm-drift.mp3" loop playsinline preload="auto"></audio></section>
+<section class="card"><h2>CREW</h2><div class="crew">
+<figure style="margin:0"><img src="img/tts/crew1.jpg" alt="Medical officer"><figcaption>Medical</figcaption></figure>
+<figure style="margin:0"><img src="img/tts/crew2.jpg" alt="Harbor Master"><figcaption>Harbor Master</figcaption></figure>
+<figure style="margin:0"><img src="img/tts/crew3.jpg" alt="Engineering"><figcaption>Engineering</figcaption></figure></div></section>
+<section class="card"><h2>REST LOUNGE</h2><img class="lounge" src="img/tts/lounge.jpg" alt="Captain in the rest lounge"></section>
+<section class="card links"><h2>STATIONS</h2>
+<a href="./">Bridge Command Dashboard</a><a href="board/level-1.html">Level 1 Board</a>
+<a href="https://pianomanuel.github.io/uss-nimitz-fury-site/">USS Nimitz Fury site</a>
+<a href="https://github.com/pianomanuel">GitHub</a><a href="https://uss-nimitz-fury.atlassian.net/jira">Jira</a></section>
+</main>
+<script>
+(function(){const K='uss-gate-hash',g=document.getElementById('gate'),m=document.getElementById('gmsg'),i=document.getElementById('gpw');
 if(sessionStorage.getItem('uss-in')){g.remove();return}
 if(!localStorage.getItem(K))m.textContent='First visit: choose a passphrase';
 async function h(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-async function go(){if(!i.value)return;const x=await h(i.value),s=localStorage.getItem(K);if(!s){localStorage.setItem(K,x)}else if(s!==x){m.textContent='Wrong passphrase';i.value='';return}sessionStorage.setItem('uss-in','1');g.remove()}
-document.getElementById('gbtn').onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go()}})();</script>
-
-<h1>Ani</h1>
-<p>Listen Court</p>
-<button id="play" type="button">Play music</button>
-<select id="track">
-  <option value="audio/ambient/calm-drift.mp3">Calm drift</option>
-  <option value="audio/ambient/deep-space-pad.mp3">Deep space pad</option>
-  <option value="audio/ambient/ocean-hum.mp3">Ocean hum</option>
-</select>
-<div id="status">Tap Play music</div>
-<div class="tip">No sound on iPhone? Turn up the volume and check the side switch isn't on silent.</div>
-<audio id="a" src="audio/ambient/calm-drift.mp3" loop playsinline preload="auto"></audio>
-<script>
+async function go(){if(!i.value)return;const x=await h(i.value),s=localStorage.getItem(K);if(!s)localStorage.setItem(K,x);else if(s!==x){m.textContent='Wrong passphrase';i.value='';return}sessionStorage.setItem('uss-in','1');g.remove()}
+document.getElementById('gbtn').onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go()}})();
 localStorage.removeItem('ani-music-disabled');
-const a=document.getElementById('a'),b=document.getElementById('play'),t=document.getElementById('track'),s=document.getElementById('status');
-function name(){return t.options[t.selectedIndex].text}
-b.onclick=function(){
-  if(!a.paused){a.pause();b.textContent='Play music';b.classList.remove('on');s.textContent='Paused';return;}
-  a.play().then(function(){b.textContent='Pause music';b.classList.add('on');s.textContent='Playing: '+name();})
-   .catch(function(e){s.textContent='Could not play ('+(e&&e.name||'error')+'). Tap again.';});
-};
-t.onchange=function(){var was=!a.paused;a.src=t.value;s.textContent=name()+' selected';if(was){a.play().catch(function(){s.textContent='Tap Play music';});}};
-a.onerror=function(){s.textContent='Track failed to load. Pick another.';};
-</script>
-</body>
-</html>
+const a=document.getElementById('a'),p=document.getElementById('play'),t=document.getElementById('track'),st=document.getElementById('status');
+p.onclick=async()=>{if(a.paused){try{await a.play();p.textContent='Pause';st.innerHTML='<small>Playing</small>'}catch(e){st.innerHTML='<small>Tap again; check the silent switch</small>'}}else{a.pause();p.textContent='Play'}};
+t.onchange=()=>{const w=!a.paused;a.src=t.value;if(w)a.play()};
+const c=()=>document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});c();setInterval(c,30000);
+</script></body></html>
