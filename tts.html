@@ -21,13 +21,10 @@ select{width:100%;max-width:300px;padding:14px;font-size:17px;border-radius:12px
 <p>Listen Court</p>
 <button id="play" type="button">Play music</button>
 <select id="track">
-  <option value="audio/ambient/calm-drift.mp3">Calm drift</option>
-  <option value="audio/ambient/deep-space-pad.mp3">Deep space pad</option>
-  <option value="audio/ambient/ocean-hum.mp3">Ocean hum</option>
-</select>
+  </select>
 <div id="status">Tap Play music</div>
 <div class="tip">No sound on iPhone? Turn up the volume and check the side switch isn't on silent.</div>
-<audio id="a" src="audio/ambient/calm-drift.mp3" loop playsinline preload="auto"></audio>
+<audio id="a" loop playsinline preload="auto"></audio>
 <script>
 localStorage.removeItem('ani-music-disabled');
 const a=document.getElementById('a'),b=document.getElementById('play'),t=document.getElementById('track'),s=document.getElementById('status');
