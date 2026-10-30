@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USS Surrender — Bridge Command Dashboard</title>
+<style>
+  :root{
+    --bg:#060a14; --panel:#0c1426; --panel2:#101b33;
+    --line:#1e2c4d; --txt:#d7e3f8; --dim:#8fa3c7;
+    --amber:#ffb454; --green:#3ddc84; --red:#ff5d5d; --blue:#5aa9ff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    min-height:100vh; padding:24px;
+    background-image:radial-gradient(1px 1px at 12% 22%, #fff 100%, transparent 100%),
+      radial-gradient(1px 1px at 68% 8%, #fff 100%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 84% 64%, #cfe0ff 100%, transparent 100%),
+      radial-gradient(1px 1px at 32% 78%, #fff 100%, transparent 100%),
+      radial-gradient(1px 1px at 52% 42%, #cfe0ff 100%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 8% 88%, #fff 100%, transparent 100%);
+  }
+  .wrap{max-width:1200px; margin:0 auto;}
+  header{
+    display:flex; justify-content:space-between; align-items:center;
+    border:1px solid var(--line); border-radius:12px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));
+    padding:20px 24px; margin-bottom:20px;
+  }
+  header h1{font-size:26px; letter-spacing:3px;}
+  header h1 span{color:var(--amber);}
+  .sub{color:var(--dim); font-size:13px; letter-spacing:2px; margin-top:4px;}
+  .alert{
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--green); color:var(--green);
+    padding:10px 16px; border-radius:999px; font-size:13px; letter-spacing:2px;
+  }
+  .dot{width:10px; height:10px; border-radius:50%; background:var(--green);
+    box-shadow:0 0 8px var(--green); animation:pulse 2s infinite;}
+  @keyframes pulse{50%{opacity:.5;}}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; margin-bottom:20px;}
+  .card{
+    border:1px solid var(--line); border-radius:10px;
+    background:var(--panel); padding:16px;
+  }
+  .card h3{font-size:14px; letter-spacing:1.5px; margin-bottom:4px; display:flex; align-items:center; gap:8px;}
+  .card p{font-size:12.5px; color:var(--dim); line-height:1.5;}
+  .st{width:9px; height:9px; border-radius:50%; display:inline-block; flex:none;}
+  .ok{background:var(--green); box-shadow:0 0 6px var(--green);}
+  .warn{background:var(--amber); box-shadow:0 0 6px var(--amber);}
+  .section{margin-bottom:20px;}
+  .section > h2{
+    font-size:15px; letter-spacing:3px; color:var(--amber);
+    margin-bottom:12px; border-bottom:1px solid var(--line); padding-bottom:8px;
+  }
+  .loop{display:flex; flex-wrap:wrap; gap:0; align-items:stretch;}
+  .stage{
+    flex:1 1 120px; text-align:center; padding:14px 8px;
+    border:1px solid var(--line); background:var(--panel);
+    font-size:12px; letter-spacing:1.5px; position:relative;
+  }
+  .stage:first-child{border-radius:10px 0 0 10px;}
+  .stage:last-child{border-radius:0 10px 10px 0;}
+  .stage:not(:last-child)::after{
+    content:"›"; position:absolute; right:-9px; top:50%; transform:translateY(-50%);
+    color:var(--amber); font-size:20px; z-index:1;
+  }
+  .stage b{display:block; font-size:13px; margin-bottom:4px; color:var(--txt);}
+  .stage span{color:var(--dim); font-size:11px;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{text-align:left; color:var(--dim); font-weight:600; letter-spacing:1px;
+    padding:10px 12px; border-bottom:1px solid var(--line); font-size:11px;}
+  td{padding:10px 12px; border-bottom:1px solid #141f38;}
+  tr:last-child td{border-bottom:none;}
+  .pill{display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; letter-spacing:1px;}
+  .p-await{border:1px solid var(--amber); color:var(--amber);}
+  .p-done{border:1px solid var(--green); color:var(--green);}
+  .log{font-size:12.5px; color:var(--dim); line-height:1.9;}
+  .log b{color:var(--txt); font-weight:600;}
+  .log .t{color:var(--blue);}
+  footer{
+    margin-top:24px; padding-top:16px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    font-size:12px; color:var(--dim);
+  }
+  footer a{color:var(--blue); text-decoration:none; margin-right:16px;}
+  footer a:hover{text-decoration:underline;}
+  /* Fly-in navigation */
+  #menuBtn{
+    background:var(--panel2); color:var(--amber); border:1px solid var(--line);
+    border-radius:10px; font-size:22px; line-height:1; padding:10px 14px; cursor:pointer;
+  }
+  #menuBtn:hover{border-color:var(--amber);}
+  #flyin{
+    position:fixed; top:0; right:0; height:100vh; width:280px; max-width:85vw;
+    background:var(--panel2); border-left:1px solid var(--line);
+    transform:translateX(100%); transition:transform .28s ease;
+    z-index:50; padding:20px; display:flex; flex-direction:column; gap:4px;
+  }
+  #flyin.open{transform:translateX(0);}
+  #flyin .nav-head{
+    display:flex; justify-content:space-between; align-items:center;
+    color:var(--amber); font-size:13px; letter-spacing:3px; margin-bottom:12px;
+  }
+  #menuClose{
+    background:none; border:none; color:var(--dim); font-size:28px; cursor:pointer; line-height:1;
+  }
+  #menuClose:hover{color:var(--txt);}
+  #flyin a{
+    color:var(--txt); text-decoration:none; font-size:14px; letter-spacing:1px;
+    padding:12px 10px; border-radius:8px;
+  }
+  #flyin a:hover{background:var(--panel); color:var(--amber);}
+  #flyin .nav-div{
+    color:var(--dim); font-size:11px; letter-spacing:3px; margin:14px 10px 4px;
+    border-top:1px solid var(--line); padding-top:14px;
+  }
+  #scrim{
+    position:fixed; inset:0; background:rgba(0,0,0,.55);
+    opacity:0; pointer-events:none; transition:opacity .28s ease; z-index:40;
+  }
+  #scrim.show{opacity:1; pointer-events:auto;}
+  /* Fleet manifest */
+  .manifest{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; margin-top:14px;}
+  .mcard{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px;}
+  .mcard h3{margin:0 0 8px; font-size:13px; letter-spacing:1px; font-weight:600;}
+  .mcard .row{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .badge{font-size:10px; letter-spacing:2px; padding:3px 10px; border-radius:20px; white-space:nowrap;}
+  .badge.pub{color:#7CFFB2; border:1px solid #2c5f46;}
+  .badge.priv{color:var(--dim); border:1px solid var(--line);}
+  .mcard a.open{color:var(--blue); font-size:12px; letter-spacing:1px; text-decoration:none;}
+  .mcard a.open:hover{text-decoration:underline;}
+  .mcard .note{color:var(--dim); font-size:11px;}
+  html{scroll-behavior:smooth;}
+</style>
+</head>
+<body>
+<nav id="flyin" aria-label="Bridge navigation">
+  <div class="nav-head">
+    <span>NAVIGATION</span>
+    <button id="menuClose" aria-label="Close navigation menu">&times;</button>
+  </div>
+  <a href="#systems">Ship Systems</a>
+  <a href="#loop">The Loop</a>
+  <a href="#approvals">Approval Queue</a>
+  <a href="#log">Ship's Log</a>
+  <a href="#manifest">Fleet Manifest</a>
+  <a href="board/level-1.html">Board level 1</a>
+  <div class="nav-div">EXTERNAL</div>
+  <a href="https://github.com/pianomanuel/uss-surrender">Ship's Repository</a>
+  <a href="https://pianomanuel.atlassian.net/jira/software/projects/PMC/boards/37/backlog">PMC Backlog</a>
+</nav>
+<div id="scrim"></div>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>USS <span>SURRENDER</span></h1>
+      <div class="sub">BRIDGE COMMAND DASHBOARD</div>
+    </div>
+    <div class="alert"><span class="dot"></span>ALL SYSTEMS NOMINAL</div>
+    <button id="menuBtn" aria-label="Open navigation menu" aria-expanded="false">&#9776;</button>
+  </header>
+
+  <div class="section" id="systems">
+    <h2>SHIP SYSTEMS</h2>
+    <div class="grid">
+      <div class="card"><h3><span class="st ok"></span>BRIDGE</h3><p>Central command dashboard and main app UI. All logs, approvals and status reports flow through here.</p></div>
+      <div class="card"><h3><span class="st ok"></span>SHIP'S COMPUTER</h3><p>Database and AI agent core. Crew registry, memory banks and inference engines online.</p></div>
+      <div class="card"><h3><span class="st ok"></span>THE DOCK</h3><p>Deployment and CI/CD environment. Transporter pipeline standing by for the next release.</p></div>
+      <div class="card"><h3><span class="st ok"></span>SUBSPACE RADIO</h3><p>Monitoring and alert system. Logs, metrics and external integrations reporting in.</p></div>
+      <div class="card"><h3><span class="st ok"></span>WARP CORE</h3><p>Processing and energy engine. Compute budget healthy; burst capacity reserved.</p></div>
+      <div class="card"><h3><span class="st ok"></span>TRANSPORTER &amp; LIFT</h3><p>Deploy pipeline. Code and content beam from dock to production with full transport logs.</p></div>
+      <div class="card"><h3><span class="st warn"></span>HOLODECK</h3><p>Isolated sandbox for experiments. One simulation queued for Bridge review.</p></div>
+      <div class="card"><h3><span class="st ok"></span>CLOAKING DEVICE</h3><p>Privacy layer engaged. Personal data hidden; only the public shell is visible.</p></div>
+      <div class="card"><h3><span class="st ok"></span>SHUTTLECRAFT FLEET</h3><p>Satellite apps docked and reporting. Independently deployable, recallable, scrappable.</p></div>
+      <div class="card"><h3><span class="st ok"></span>MEDICAL BAY</h3><p>Data recovery, backup and healing. Diagnostics green; quarantine empty.</p></div>
+      <div class="card"><h3><span class="st ok"></span>IMPULSE / WARP DRIVE</h3><p>Two-speed operations. Impulse for daily routine, warp reserved for burst tasks.</p></div>
+      <div class="card"><h3><span class="st ok"></span>BOARD LEVEL 1</h3><p>Mind Surrender voice database. Eight studio voices on the first deed. <a href="board/level-1.html">Open level 1</a></p></div>
+      <div class="card"><h3><span class="st ok"></span>VOID PORTS</h3><p>Secondary AI entry points sealed. Open only while a specific task is active.</p></div>
+    </div>
+  </div>
+
+  <div class="section" id="loop">
+    <h2>THE LOOP — LAW OF THE SHIP</h2>
+    <div class="loop">
+      <div class="stage"><b>INTAKE</b><span>chat · docs · email · code</span></div>
+      <div class="stage"><b>DESIGN</b><span>every change a CR</span></div>
+      <div class="stage"><b>BUILD</b><span>demoed &amp; logged</span></div>
+      <div class="stage"><b>TEST</b><span>V&amp;V gates</span></div>
+      <div class="stage"><b>DEPLOY</b><span>transporter log</span></div>
+      <div class="stage"><b>MONITOR</b><span>subspace radio</span></div>
+      <div class="stage"><b>FEEDBACK</b><span>back to intake</span></div>
+    </div>
+  </div>
+
+  <div class="section" id="approvals">
+    <h2>CAPTAIN'S APPROVAL QUEUE</h2>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table>
+        <tr><th>ITEM</th><th>TYPE</th><th>STATUS</th></tr>
+        <tr><td>Bridge dashboard public alpha</td><td>Release</td><td><span class="pill p-await">AWAITING CAPTAIN</span></td></tr>
+        <tr><td>Holodeck simulation review</td><td>Experiment</td><td><span class="pill p-await">AWAITING CAPTAIN</span></td></tr>
+        <tr><td>Age-gate design (self-attest)</td><td>Design</td><td><span class="pill p-await">AWAITING CAPTAIN</span></td></tr>
+        <tr><td>Nightly mirror verification</td><td>Operations</td><td><span class="pill p-done">CLEARED</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section" id="log">
+    <h2>SHIP'S LOG — RECENT ENTRIES</h2>
+    <div class="card log">
+      <div><span class="t">2026-10-23 11:48</span> — <b>Board level 1:</b> Mind Surrender voice database filed. Eight voices. Slow pace 0.97. Two on the bridge.</div>
+      <div><span class="t">2026-10-08 22:05</span> — <b>Bridge:</b> command dashboard commissioned by the Captain. All stations reporting.</div>
+      <div><span class="t">2026-10-08 21:50</span> — <b>Ship's Computer:</b> PMC backlog export secured — 330 issues archived to the dock.</div>
+      <div><span class="t">2026-10-08 21:55</span> — <b>Medical Bay:</b> overnight build schedules restored after erroneous stand-down. All sprints building.</div>
+      <div><span class="t">2026-10-07 20:37</span> — <b>Subspace Radio:</b> false stand-down detected — schedules paused by completed-goal sweep. Flagged for review.</div>
+    </div>
+  </div>
+
+  <div class="section" id="manifest">
+    <h2>FLEET MANIFEST — ALL PAST ARTIFACTS</h2>
+    <p class="muted">Every build shipped to date. Public artifacts open for anyone with the link; private artifacts open in Muse for the Captain.</p>
+    <div class="manifest">
+      <div class="mcard"><h3>3D See Through Brain</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>AI Exchange — Concentric Circles of Joy</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Bubble of Life — Level Three video</h3><div class="row"><span class="badge pub">PUBLIC</span><a class="open" href="https://muse.ai/s/bubble-of-life-level-three-video-xll5xdflxyxhxgpxp">OPEN &#8599;</a></div></div>
+      <div class="mcard"><h3>Dashboard</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Doctor Portal (Private Demo)</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Emergency Break-Glass Button</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Eve Voice Companion</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Family Connect</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>ManuelOps Release Event</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Mind Box</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Pianoamble by jrobert.manuel</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Private Web App</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Public Web App</h3><div class="row"><span class="badge pub">PUBLIC</span><a class="open" href="https://muse.ai/s/public-web-app-op5xddw8xnvx0xq">OPEN &#8599;</a></div></div>
+      <div class="mcard"><h3>Sentinel Security Console</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Ship's World</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Ship's World Demo</h3><div class="row"><span class="badge pub">PUBLIC</span><a class="open" href="https://muse.ai/s/ship-s-world-demo-vxv5xebpl6hln">OPEN &#8599;</a></div></div>
+      <div class="mcard"><h3>The Bridge</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Voice Recorder</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+      <div class="mcard"><h3>Web App</h3><div class="row"><span class="badge priv">PRIVATE</span><span class="note">Opens in Muse</span></div></div>
+    </div>
+  </div>
+
+  <footer>
+    <div>
+      <a href="https://github.com/pianomanuel/uss-surrender">Ship's repository</a>
+      <a href="https://pianomanuel.atlassian.net/jira/software/projects/PMC/boards/37/backlog">PMC backlog</a>
+    </div>
+    <div>USS Surrender · Bridge Command · Captain's eyes only until release</div>
+  </footer>
+
+</div>
+<script>
+(function(){
+  var btn=document.getElementById('menuBtn'),
+      panel=document.getElementById('flyin'),
+      close=document.getElementById('menuClose'),
+      scrim=document.getElementById('scrim');
+  function open(){
+    panel.classList.add('open'); scrim.classList.add('show');
+    btn.setAttribute('aria-expanded','true');
+  }
+  function shut(){
+    panel.classList.remove('open'); scrim.classList.remove('show');
+    btn.setAttribute('aria-expanded','false');
+  }
+  btn.addEventListener('click',function(){
+    panel.classList.contains('open')?shut():open();
+  });
+  close.addEventListener('click',shut);
+  scrim.addEventListener('click',shut);
+  panel.querySelectorAll('a').forEach(function(a){a.addEventListener('click',shut);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')shut();});
+})();
+</script>
+</body>
+</html>

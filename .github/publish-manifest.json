@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "publish_root": "public-site",
+  "files": [
+    "index.html",
+    "board/level-1.html",
+    "alpha/index.html",
+    "alpha/repos.html",
+    "robots.txt"
+  ]
+}
