@@ -160,9 +160,9 @@ h1 {
   </div>
 
   <select class="music-select" id="musicSelect">
-    <option value="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=relaxing-ambient-11157.mp3">Soft ambient</option>
-    <option value="https://cdn.pixabay.com/download/audio/2021/08/09/audio_12b0c7443c.mp3?filename=relaxing-145038.mp3">Calm piano</option>
-    <option value="https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3?filename=peaceful-garden-112198.mp3">Peaceful garden</option>
+    <option value="audio/ambient/calm-drift.mp3">Calm drift</option>
+    <option value="audio/ambient/deep-space-pad.mp3">Deep space pad</option>
+    <option value="audio/ambient/ocean-hum.mp3">Ocean hum</option>
   </select>
 
   <div class="settings-row">
@@ -195,6 +195,16 @@ h1 {
     const relaxAudio = document.getElementById('relaxAudio');
     let musicPlaying = false;
     let musicDisabled = localStorage.getItem('ani-music-disabled') === 'true';
+    let loadFallbackInFlight = false;
+
+    function trackLabel(url) {
+      const opt = Array.from(musicSelect.options).find(o => o.value === url);
+      return opt ? opt.textContent.trim() : (url.split('/').pop() || 'track');
+    }
+
+    function currentTrackIndex() {
+      return Math.max(0, musicSelect.selectedIndex);
+    }
 
     function updateMusicUI() {
       musicDisabledCheckbox.checked = musicDisabled;
@@ -209,36 +219,85 @@ h1 {
         }
       } else {
         musicBtn.classList.remove('disabled');
-        musicBtn.textContent = musicPlaying ? 'Pause music' : 'Relaxing music';
+        musicBtn.textContent = musicPlaying ? 'Pause music' : 'Play music';
         musicSelect.disabled = false;
       }
     }
 
     // Research mode: 30% volume
     relaxAudio.volume = 0.3;
+    relaxAudio.loop = true;
 
     function setTrack(url) {
       if (musicDisabled) return;
       relaxAudio.src = url;
       relaxAudio.volume = 0.3;
-      if (musicPlaying) {
-        relaxAudio.play().catch(() => {});
-      }
     }
 
-    async function startMusic() {
+    let fallbackAttempts = 0;
+
+    function tryNextTrack(failedUrl) {
+      if (musicDisabled || loadFallbackInFlight) return;
+      const options = Array.from(musicSelect.options);
+      if (!options.length) return;
+      if (fallbackAttempts >= options.length) {
+        status.textContent = "Couldn't load any ambient tracks";
+        musicPlaying = false;
+        musicBtn.classList.remove('playing');
+        musicBtn.textContent = 'Play music';
+        return;
+      }
+      fallbackAttempts += 1;
+      const failedIdx = options.findIndex(o => o.value === failedUrl);
+      const start = failedIdx >= 0 ? failedIdx : currentTrackIndex();
+      const nextIdx = (start + 1) % options.length;
+      const next = options[nextIdx].value;
+      musicSelect.selectedIndex = nextIdx;
+      status.textContent = "Couldn't load track " + trackLabel(failedUrl) + ' — trying next';
+      loadFallbackInFlight = true;
+      setTrack(next);
+      const onReady = async () => {
+        relaxAudio.removeEventListener('canplay', onReady);
+        loadFallbackInFlight = false;
+        await startMusic({ fromFallback: true });
+      };
+      relaxAudio.addEventListener('canplay', onReady, { once: true });
+      relaxAudio.load();
+      setTimeout(() => { loadFallbackInFlight = false; }, 4000);
+    }
+
+    async function startMusic(opts = {}) {
       if (musicDisabled) return false;
-      setTrack(musicSelect.value);
+      const url = musicSelect.value;
+      setTrack(url);
       try {
         await relaxAudio.play();
         musicPlaying = true;
         musicBtn.classList.add('playing');
         musicBtn.textContent = 'Pause music';
+        status.textContent = 'Playing: ' + trackLabel(url);
+        fallbackAttempts = 0;
         return true;
       } catch (e) {
+        musicPlaying = false;
+        musicBtn.classList.remove('playing');
+        musicBtn.textContent = 'Play music';
+        const name = (e && e.name) || '';
+        if (name === 'NotAllowedError') {
+          status.textContent = 'Tap Play to start music (browser blocked autoplay)';
+        } else if (!opts.fromFallback) {
+          status.textContent = 'Tap Play music to start · 30% vol';
+        }
         return false;
       }
     }
+
+    relaxAudio.addEventListener('error', () => {
+      if (musicDisabled) return;
+      const failed = musicSelect.value;
+      status.textContent = "Couldn't load track " + trackLabel(failed) + ' — trying next';
+      tryNextTrack(failed);
+    });
 
     musicDisabledCheckbox.addEventListener('change', () => {
       musicDisabled = musicDisabledCheckbox.checked;
@@ -249,8 +308,13 @@ h1 {
 
     musicSelect.addEventListener('change', () => {
       if (musicDisabled) return;
+      loadFallbackInFlight = false;
+      fallbackAttempts = 0;
       setTrack(musicSelect.value);
-      status.textContent = 'Track selected · 30% vol';
+      status.textContent = 'Track selected: ' + trackLabel(musicSelect.value) + ' · 30% vol';
+      if (musicPlaying) {
+        startMusic();
+      }
     });
 
     bookmarkBtn.addEventListener('click', () => {
@@ -285,7 +349,11 @@ h1 {
 
       if (!musicDisabled) {
         const started = await startMusic();
-        status.textContent = started ? 'Welcome. Music at 30% · Warp nominal' : 'Welcome. Tap music button to start.';
+        if (!started && status.textContent.indexOf('Tap Play') === -1) {
+          status.textContent = 'Welcome. Tap Play music to start.';
+        } else if (started) {
+          status.textContent = 'Welcome. Playing: ' + trackLabel(musicSelect.value);
+        }
       } else {
         status.textContent = 'Welcome. Music disabled.';
       }
@@ -300,11 +368,10 @@ h1 {
         relaxAudio.pause();
         musicPlaying = false;
         musicBtn.classList.remove('playing');
-        musicBtn.textContent = 'Relaxing music';
+        musicBtn.textContent = 'Play music';
         status.textContent = 'Music paused · 30% vol';
       } else {
-        const started = await startMusic();
-        status.textContent = started ? 'Music playing at 30% · Warp nominal' : 'Tap again to allow audio';
+        await startMusic();
       }
     });
 
@@ -318,8 +385,7 @@ h1 {
       status.textContent = 'Aboard: ' + saved.split('@')[0] + (musicDisabled ? ' · music disabled' : ' · 30% vol');
       if (!musicDisabled) {
         setTimeout(async () => {
-          const started = await startMusic();
-          if (started) status.textContent = 'Aboard. Music running at 30% · Warp nominal';
+          await startMusic();
         }, 500);
       }
     }
