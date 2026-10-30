@@ -21,37 +21,58 @@ button,select{font-size:1rem;padding:10px 14px;border-radius:10px;border:1px sol
 #gate input{width:100%;font-size:18px;padding:10px;border-radius:10px;border:1px solid var(--gold);background:#111;color:#fff;margin:10px 0}
 #gate button{width:100%}
 .ctl{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ctl a{display:block;text-align:center;padding:10px 4px;border:1px solid rgba(212,168,75,.5);border-radius:10px;color:#fff;text-decoration:none;font-size:.85rem;background:rgba(212,168,75,.08)}
+#warp{position:fixed;inset:0;z-index:9998;pointer-events:none;background:radial-gradient(circle,#fff0 0,#fff0 30%,#000 75%);animation:warp 1.7s ease-out forwards}
+@keyframes warp{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(2.5)}}
+.bg{animation:approach 2.2s ease-out}@keyframes approach{from{transform:scale(1.6);filter:brightness(.1) blur(6px)}to{transform:scale(1);filter:brightness(.45)}}
+#ttslock{text-align:center}#ttslock input{font-size:16px;padding:10px;border-radius:10px;border:1px solid var(--gold);background:#111;color:#fff;width:70%;margin:8px 0}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#777;margin-right:6px}.up{background:#3c3}.down{background:#c33}
 </style></head><body>
 <div id="gate"><div class="box"><h1>USS SURRENDER</h1><p id="gmsg">Enter your passphrase</p><input id="gpw" type="password" autocomplete="current-password"><button id="gbtn">Board the ship</button></div></div>
 <div class="bg"></div>
 <header><h1>USS SURRENDER</h1><p>Bridge · Captain on deck</p></header>
 <main class="wrap">
 <section class="card captain"><img src="img/tts/captain.jpg" alt="Captain Robert"><div><h2>CAPTAIN</h2><div>Robert Manuel</div><small>USS-NIMITZ-FURY · <span id="clock"></span></small></div></section>
-<section class="card"><h2>SHIP'S MUSIC</h2><div class="row"><button id="play" type="button">Play</button>
+<section class="card"><h2>TTS · SHIP'S MUSIC</h2><div id="ttslock"><p id="tmsg">TTS station locked</p><input id="tpw" type="password"><br><button id="tbtn">Unlock TTS</button></div><div id="ttsbody" hidden><div class="row"><button id="play" type="button">Play</button>
 <select id="track"><option value="audio/ambient/calm-drift.mp3">Calm drift</option><option value="audio/ambient/deep-space-pad.mp3">Deep space pad</option><option value="audio/ambient/ocean-hum.mp3">Ocean hum</option></select></div>
 <p id="status"><small>Ready. On iPhone, turn the silent switch off.</small></p>
-<audio id="a" src="audio/ambient/calm-drift.mp3" loop playsinline preload="auto"></audio></section>
+<audio id="a" src="audio/ambient/calm-drift.mp3" loop playsinline preload="auto"></audio></div></section>
 <section class="card"><h2>CREW</h2><div class="crew">
 <figure style="margin:0"><img src="img/tts/crew1.jpg" alt="Medical officer"><figcaption>Medical</figcaption></figure>
 <figure style="margin:0"><img src="img/tts/crew2.jpg" alt="Harbor Master"><figcaption>Harbor Master</figcaption></figure>
 <figure style="margin:0"><img src="img/tts/crew3.jpg" alt="Engineering"><figcaption>Engineering</figcaption></figure></div></section>
 <section class="card"><h2>REST LOUNGE</h2><img class="lounge" src="img/tts/lounge.jpg" alt="Captain in the rest lounge"></section>
 <section class="card"><h2>CONTROLLERS · 36 CONNECTED</h2><div class="ctl"><a href="https://mail.google.com" target="_blank" rel="noopener">Gmail</a><a href="https://calendar.google.com" target="_blank" rel="noopener">Google Calendar</a><a href="https://drive.google.com" target="_blank" rel="noopener">Google Drive</a><a href="https://docs.google.com" target="_blank" rel="noopener">Google Docs</a><a href="https://slides.google.com" target="_blank" rel="noopener">Google Slides</a><a href="https://outlook.office.com" target="_blank" rel="noopener">Outlook</a><a href="https://onedrive.live.com" target="_blank" rel="noopener">OneDrive</a><a href="https://github.com/pianomanuel" target="_blank" rel="noopener">GitHub</a><a href="https://uss-nimitz-fury.atlassian.net/jira" target="_blank" rel="noopener">Jira</a><a href="https://uss-nimitz-fury.atlassian.net/wiki" target="_blank" rel="noopener">Confluence</a><a href="https://developer.atlassian.com/console/myapps/" target="_blank" rel="noopener">Forge</a><a href="https://gitlab.com" target="_blank" rel="noopener">GitLab</a><a href="https://linear.app" target="_blank" rel="noopener">Linear</a><a href="https://app.asana.com" target="_blank" rel="noopener">Asana</a><a href="https://app.slack.com" target="_blank" rel="noopener">Slack</a><a href="https://coda.io" target="_blank" rel="noopener">Coda</a><a href="https://app.gitbook.com" target="_blank" rel="noopener">GitBook</a><a href="https://app.chatprd.ai" target="_blank" rel="noopener">ChatPRD</a><a href="https://granola.ai" target="_blank" rel="noopener">Granola</a><a href="https://app.read.ai" target="_blank" rel="noopener">Read.ai</a><a href="https://www.figma.com" target="_blank" rel="noopener">Figma</a><a href="https://www.canva.com" target="_blank" rel="noopener">Canva</a><a href="https://www.krea.ai" target="_blank" rel="noopener">Krea</a><a href="https://mobbin.com" target="_blank" rel="noopener">Mobbin</a><a href="https://floot.com" target="_blank" rel="noopener">Floot</a><a href="https://app.clarify.ai" target="_blank" rel="noopener">Clarify</a><a href="https://supabase.com/dashboard" target="_blank" rel="noopener">Supabase</a><a href="https://console.firebase.google.com" target="_blank" rel="noopener">Firebase</a><a href="https://vercel.com/dashboard" target="_blank" rel="noopener">Vercel</a><a href="https://dashboard.render.com" target="_blank" rel="noopener">Render</a><a href="https://cloud.digitalocean.com" target="_blank" rel="noopener">DigitalOcean</a><a href="https://portal.azure.com" target="_blank" rel="noopener">Azure</a><a href="https://cloud.appwrite.io" target="_blank" rel="noopener">Appwrite</a><a href="https://web.postman.co" target="_blank" rel="noopener">Postman</a><a href="https://ads.google.com" target="_blank" rel="noopener">Google Ads</a><a href="https://x.com" target="_blank" rel="noopener">X</a></div></section>
+<section class="card links"><h2>SHIP INTERNAL · MAC + TAILSCALE ONLY</h2>
+<a href="https://pianomanuel.com:8444/nimitz-fury/"><span class="dot" data-u="https://pianomanuel.com:8444/nimitz-fury/"></span>Prod Bridge</a>
+<a href="https://pianomanuel.com:8444/nimitz-fury-dev/"><span class="dot" data-u="https://pianomanuel.com:8444/nimitz-fury-dev/"></span>Dev Bridge</a>
+<a href="https://pianomanuel.com:8444/nimitz-fury/captains-chair.html"><span class="dot" data-u="https://pianomanuel.com:8444/nimitz-fury/captains-chair.html"></span>Captain's Chair (prod)</a>
+<a href="https://pianomanuel.com:8444/nimitz-fury-dev/captains-chair.html"><span class="dot" data-u="https://pianomanuel.com:8444/nimitz-fury-dev/captains-chair.html"></span>Captain's Chair (dev)</a>
+<small>Green = reachable from this device. Red = Mac offline or not on Tailscale.</small></section>
 <section class="card links"><h2>STATIONS</h2>
 <a href="./">Bridge Command Dashboard</a><a href="board/level-1.html">Level 1 Board</a>
 <a href="https://pianomanuel.github.io/uss-nimitz-fury-site/">USS Nimitz Fury site</a>
-<a href="https://github.com/pianomanuel">GitHub</a><a href="https://uss-nimitz-fury.atlassian.net/jira">Jira</a></section>
+<a href="https://github.com/pianomanuel">GitHub</a><a href="https://uss-nimitz-fury.atlassian.net/jira/software/projects/KAN/boards">Jira KAN board</a><a href="https://uss-nimitz-fury.atlassian.net/wiki/spaces/~6146783832c0cb006ac600d1/pages/884737/USS-NIMITZ-FURY+Status+2026-10-30">Confluence status page</a><a href="https://github.com/pianomanuel/uss-surrender/releases">Releases</a></section>
 </main>
 <script>
 (function(){const K='uss-gate-hash',g=document.getElementById('gate'),m=document.getElementById('gmsg'),i=document.getElementById('gpw');
 if(sessionStorage.getItem('uss-in')){g.remove();return}
 if(!localStorage.getItem(K))m.textContent='First visit: choose a passphrase';
 async function h(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-async function go(){if(!i.value)return;const x=await h(i.value),s=localStorage.getItem(K);if(!s)localStorage.setItem(K,x);else if(s!==x){m.textContent='Wrong passphrase';i.value='';return}sessionStorage.setItem('uss-in','1');g.remove()}
+async function go(){if(!i.value)return;const x=await h(i.value),s=localStorage.getItem(K);if(!s)localStorage.setItem(K,x);else if(s!==x){m.textContent='Wrong passphrase';i.value='';return}sessionStorage.setItem('uss-in','1');fly()}
+function fly(){g.style.transition='transform 1.6s ease-in,opacity 1.6s ease-in';g.style.transform='scale(3)';g.style.opacity='0';const f=document.createElement('div');f.id='warp';document.body.appendChild(f);setTimeout(()=>{g.remove();f.remove()},1700)}
 document.getElementById('gbtn').onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go()}})();
 localStorage.removeItem('ani-music-disabled');
 const a=document.getElementById('a'),p=document.getElementById('play'),t=document.getElementById('track'),st=document.getElementById('status');
 p.onclick=async()=>{if(a.paused){try{await a.play();p.textContent='Pause';st.innerHTML='<small>Playing</small>'}catch(e){st.innerHTML='<small>Tap again; check the silent switch</small>'}}else{a.pause();p.textContent='Play'}};
 t.onchange=()=>{const w=!a.paused;a.src=t.value;if(w)a.play()};
 const c=()=>document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});c();setInterval(c,30000);
+
+const TK='uss-tts-hash';const tm=document.getElementById('tmsg'),tp=document.getElementById('tpw');
+if(!localStorage.getItem(TK))tm.textContent='First visit: choose a TTS passphrase';
+function openTTS(){document.getElementById('ttslock').remove();document.getElementById('ttsbody').hidden=false}
+if(sessionStorage.getItem('tts-in'))openTTS();
+async function th(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('tts:'+t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function tgo(){if(!tp.value)return;const x=await th(tp.value),s=localStorage.getItem(TK);if(!s)localStorage.setItem(TK,x);else if(s!==x){tm.textContent='Wrong TTS passphrase';tp.value='';return}sessionStorage.setItem('tts-in','1');openTTS()}
+document.getElementById('tbtn')&&(document.getElementById('tbtn').onclick=tgo);tp&&(tp.onkeydown=e=>{if(e.key==='Enter')tgo()});
+document.querySelectorAll('.dot').forEach(d=>{const c=new AbortController();setTimeout(()=>c.abort(),4000);fetch(d.dataset.u,{mode:'no-cors',signal:c.signal}).then(()=>d.classList.add('up')).catch(()=>d.classList.add('down'))});
 </script></body></html>
