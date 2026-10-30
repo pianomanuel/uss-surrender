@@ -32,10 +32,6 @@ button,select{font-size:1rem;padding:10px 14px;border-radius:10px;border:1px sol
 <header><h1>USS SURRENDER</h1><p>Bridge · Captain on deck</p></header>
 <main class="wrap">
 <section class="card captain"><img src="img/tts/captain.jpg" alt="Captain Robert"><div><h2>CAPTAIN</h2><div>Robert Manuel</div><small>USS-NIMITZ-FURY · <span id="clock"></span></small></div></section>
-<section class="card"><h2>TTS · SHIP'S MUSIC</h2><div id="ttslock"><p id="tmsg">TTS station locked</p><input id="tpw" type="password"><br><button id="tbtn">Unlock TTS</button></div><div id="ttsbody" hidden><div class="row"><button id="play" type="button">Play</button>
-<select id="track"><option value="audio/ambient/calm-drift.mp3">Calm drift</option><option value="audio/ambient/deep-space-pad.mp3">Deep space pad</option><option value="audio/ambient/ocean-hum.mp3">Ocean hum</option></select></div>
-<p id="status"><small>Ready. On iPhone, turn the silent switch off.</small></p>
-<audio id="a" src="audio/ambient/calm-drift.mp3" loop playsinline preload="auto"></audio></div></section>
 <section class="card"><h2>CREW</h2><div class="crew">
 <figure style="margin:0"><img src="img/tts/crew1.jpg" alt="Medical officer"><figcaption>Medical</figcaption></figure>
 <figure style="margin:0"><img src="img/tts/crew2.jpg" alt="Harbor Master"><figcaption>Harbor Master</figcaption></figure>
@@ -54,25 +50,15 @@ button,select{font-size:1rem;padding:10px 14px;border-radius:10px;border:1px sol
 <a href="https://github.com/pianomanuel">GitHub</a><a href="https://uss-nimitz-fury.atlassian.net/jira/software/projects/KAN/boards">Jira KAN board</a><a href="https://uss-nimitz-fury.atlassian.net/wiki/spaces/~6146783832c0cb006ac600d1/pages/884737/USS-NIMITZ-FURY+Status+2026-10-30">Confluence status page</a><a href="https://github.com/pianomanuel/uss-surrender/releases">Releases</a></section>
 </main>
 <script>
-(function(){const K='uss-gate-hash',g=document.getElementById('gate'),m=document.getElementById('gmsg'),i=document.getElementById('gpw');
-if(sessionStorage.getItem('uss-in')){g.remove();return}
+(function(){const K='uss-gate-hash-v3',g=document.getElementById('gate'),m=document.getElementById('gmsg'),i=document.getElementById('gpw');
+if(sessionStorage.getItem('uss-in3')){g.remove();return}
 if(!localStorage.getItem(K))m.textContent='First visit: choose a passphrase';
 async function h(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-async function go(){if(!i.value)return;const x=await h(i.value),s=localStorage.getItem(K);if(!s)localStorage.setItem(K,x);else if(s!==x){m.textContent='Wrong passphrase';i.value='';return}sessionStorage.setItem('uss-in','1');fly()}
+async function go(){if(!i.value)return;const x=await h(i.value),s=localStorage.getItem(K);if(!s)localStorage.setItem(K,x);else if(s!==x){m.textContent='Wrong passphrase';i.value='';return}sessionStorage.setItem('uss-in3','1');fly()}
 function fly(){g.style.transition='transform 1.6s ease-in,opacity 1.6s ease-in';g.style.transform='scale(3)';g.style.opacity='0';const f=document.createElement('div');f.id='warp';document.body.appendChild(f);setTimeout(()=>{g.remove();f.remove()},1700)}
 document.getElementById('gbtn').onclick=go;i.onkeydown=e=>{if(e.key==='Enter')go()}})();
 localStorage.removeItem('ani-music-disabled');
-const a=document.getElementById('a'),p=document.getElementById('play'),t=document.getElementById('track'),st=document.getElementById('status');
-p.onclick=async()=>{if(a.paused){try{await a.play();p.textContent='Pause';st.innerHTML='<small>Playing</small>'}catch(e){st.innerHTML='<small>Tap again; check the silent switch</small>'}}else{a.pause();p.textContent='Play'}};
-t.onchange=()=>{const w=!a.paused;a.src=t.value;if(w)a.play()};
 const c=()=>document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});c();setInterval(c,30000);
 
-const TK='uss-tts-hash';const tm=document.getElementById('tmsg'),tp=document.getElementById('tpw');
-if(!localStorage.getItem(TK))tm.textContent='First visit: choose a TTS passphrase';
-function openTTS(){document.getElementById('ttslock').remove();document.getElementById('ttsbody').hidden=false}
-if(sessionStorage.getItem('tts-in'))openTTS();
-async function th(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('tts:'+t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-async function tgo(){if(!tp.value)return;const x=await th(tp.value),s=localStorage.getItem(TK);if(!s)localStorage.setItem(TK,x);else if(s!==x){tm.textContent='Wrong TTS passphrase';tp.value='';return}sessionStorage.setItem('tts-in','1');openTTS()}
-document.getElementById('tbtn')&&(document.getElementById('tbtn').onclick=tgo);tp&&(tp.onkeydown=e=>{if(e.key==='Enter')tgo()});
 document.querySelectorAll('.dot').forEach(d=>{const c=new AbortController();setTimeout(()=>c.abort(),4000);fetch(d.dataset.u,{mode:'no-cors',signal:c.signal}).then(()=>d.classList.add('up')).catch(()=>d.classList.add('down'))});
 </script></body></html>
